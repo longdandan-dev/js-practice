@@ -1,0 +1,21 @@
+let salary = 8000;
+let learnTime = 4.5;
+let city = '深圳';
+let song = '多远都要在一起';
+let singer = '邓紫棋';
+let likeFrontend = true;
+let shifou = true;
+let migntianjihua;
+let menpiao = null;
+const birthYear = 2026;
+
+console.log(salary, typeof salary);
+console.log(learnTime, typeof learnTime);
+console.log(city, typeof city);
+console.log(song, typeof song);
+console.log(singer, typeof singer);
+console.log(likeFrontend, typeof likeFrontend);
+console.log(shifou, typeof shifou);
+console.log(migntianjihua, typeof migntianjihua);
+console.log(menpiao, typeof menpiao);
+console.log(birthYear, typeof birthYear);
