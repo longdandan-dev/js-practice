@@ -41,9 +41,9 @@ let n = 0;
 
 // TODO: 在这里写你的代码
 let a = 10;
-while(i<=10){
+while(a>=1){
    console.log(a)
-   i--;
+   a--;
 }console.log("3) 倒计时结束");
 
 

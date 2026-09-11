@@ -70,10 +70,24 @@ function loadPractice(file) {
     output = execFileSync(process.execPath, [full], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      timeout: 5000,
+      maxBuffer: 4 * 1024 * 1024,
     });
   } catch (err) {
-    crash = String(err.stderr || err.message);
-    output = String(err.stdout || "") + crash;
+    if (err.signal) {
+      // 跑太久被强制中止，最常见的原因就是死循环
+      crash =
+        "这段代码跑了 5 秒还没停，已经帮你强制中止了（多半是死循环）。\n" +
+        "自检：条件里的变量和循环里改变的变量是不是同一个？方向对不对？\n" +
+        "（数往小走，条件要用 >=；数往大走，条件要用 <=）";
+      output = "";
+    } else if (err.code === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER") {
+      crash = "这段代码打印的内容太多了，已经帮你中止（多半是死循环）。";
+      output = "";
+    } else {
+      crash = String(err.stderr || err.message);
+      output = String(err.stdout || "") + crash;
+    }
   }
 
   return { missing: false, source, output, crash };
