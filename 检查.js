@@ -31,7 +31,7 @@ const days = [
     rules: [
       [1, "算术运算符（+ - * / %）", (c) => c.has(1, "9", "5", "14", "3.5", "1")],
       [2, "比较运算符（> 和 ===）", (c) => c.has(2, "true", "false")],
-      [3, "逻辑运算符（&& || !）", (c) => c.src("&&") && c.src("||") && c.has(3, "true", "false")],
+      [3, "逻辑运算符（&& || !）", (c) => c.code("&&") && c.code("||") && c.has(3, "true", "false")],
       [4, "判断奇数偶数", (c) => c.has(4, "偶数") && !c.has(4, "奇数")],
       [5, "成绩等级", (c) => c.has(5, "B")],
       [6, "是否成年（三元表达式）", (c) => c.has(6, "已成年") && !c.has(6, "未成年")],
@@ -50,10 +50,23 @@ const days = [
       [
         6,
         "字符串长度 + includes",
-        (c) => c.src("length") && c.src("includes") && c.has(6, "true"),
+        (c) => c.code("length") && c.code("includes") && c.has(6, "true"),
       ],
       [7, "slice 拆日期", (c) => c.has(7, "2026", "年", "月", "日")],
       [8, "字符串反转", (c) => c.has(8, "端前圳深")],
+    ],
+  },
+  {
+    file: "08-函数练习.js",
+    title: "学习日 4 · 函数（3 个函数）",
+    rules: [
+      [1, "求和函数 + return", (c) => c.code("return") && c.has(1, "5050")],
+      [2, "最大值函数（两次调用都对）", (c) => c.has(2, "27") && c.has(2, "99")],
+      [
+        3,
+        "字符串反转函数（箭头函数 + 两次调用都对）",
+        (c) => c.code("=>") && c.has(3, "端前圳深") && c.has(3, "cba"),
+      ],
     ],
   },
 ];
@@ -96,9 +109,14 @@ function loadPractice(file) {
 function makeCtx(source, output) {
   const lines = output.split(/\r?\n/).map((l) => l.trim());
   const linesOf = (no) => lines.filter((l) => l.startsWith(no + ")"));
+  // 去掉注释后再检查关键字，防止"写在注释里"也能蒙混过关
+  const codeSource = source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "");
   return {
     source,
     src: (word) => source.includes(word),
+    code: (word) => codeSource.includes(word),
     at: (word) => output.includes(word),
     linesOf,
     has: (no, ...words) =>
