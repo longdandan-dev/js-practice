@@ -28,38 +28,61 @@
              给 h1 设 color 和 text-align: center
        提示：一条样式写成 "属性: 值;"，末尾那个分号千万别丢
     */
+      body{
+        font-family: "Microsoft YaHei",Arial, sans-serif;
+        background-color: #f5f7fa;
+      }
 
+      h1 {
+        color:#1a73e8;
+        text-align: center;
+      }
 
 
     /* ---- 跟练 2：类选择器（用 .类名 选元素）----
        目标：给 .intro 设 color 和 font-size，让它变成灰色小字
     */
-
+      .intro {
+        color: #888888;
+        font-size: 14px;
+      }
 
 
     /* ---- 跟练 3：内边距 padding ----
        目标：给 .card 设 padding: 16px，文字就会离边框远一点
     */
-
+      .card{
+        padding:16px;
+      }
 
 
     /* ---- 跟练 4：边框 border ----
        目标：给 .card 设 border: 1px solid #ddd 和 border-radius: 8px
     */
-
+      .card {
+        border:1px solid #dddddd;
+        border-radius: 8px;
+      }
 
 
     /* ---- 跟练 5：外边距 margin ----
        目标：给 .card 设 margin-bottom: 12px，两张卡片之间就有缝了
     */
-
+      .card {
+        margin-bottom: 12px;
+      }
 
 
     /* ---- 跟练 6：综合（盒模型四件套一起上）----
        目标：给 .box-demo 设 background-color + padding + border + margin
              然后自己改几次颜色和数值，观察页面怎么变
     */
-
+      .box-demo {
+        background-color: #fff8e1;
+        padding: 20px;
+        border: 2px dashed #fea500;
+        margin:24px 0;
+      }
 
 
   </style>
