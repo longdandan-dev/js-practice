@@ -49,6 +49,14 @@ function checkFile(file) {
     }
   }
 
+  // border 简写少写样式关键字（solid/dashed…）时，浏览器根本不会画线
+  const badBorder = [...css.matchAll(/(?:^|[^-a-z])border(-(?:top|right|bottom|left))?\s*:\s*([^;}]+)/gi)]
+    .filter((m) => !/(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)/i.test(m[2]))
+    .map((m) => m[0].trim());
+
+  // style 标签写到了 body 外面（浏览器能忍，但不是标准写法）
+  const styleOutside = /<\/body>[\s\S]*<style/i.test(src);
+
   // CSS 掉进页面正文：会被浏览器当成文字直接显示出来
   const text = src
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -88,6 +96,18 @@ function checkFile(file) {
     for (const b of badDecl) console.log("      少分号或写错了：" + b);
   } else {
     console.log("      没发现少分号的问题。");
+  }
+  if (badBorder.length) {
+    for (const b of badBorder) {
+      console.log(
+        "      写了边框但不会显示：" + b + " → 少了边框样式，补上 solid（实线）或 dashed（虚线）才对，例如 border: 1px solid #dddddd;"
+      );
+    }
+  }
+  if (styleOutside) {
+    console.log(
+      "      style 标签位置不对：它写在了 body 结束标签的后面。浏览器能忍，但标准写法是放进 head 里（和 title 放一起）。"
+    );
   }
   console.log(
     "      " + (leaked
