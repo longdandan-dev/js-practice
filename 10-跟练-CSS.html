@@ -1,0 +1,89 @@
+<!-- ============================================================
+     学习日 5 · 跟练本（CSS 基础）
+     ------------------------------------------------------------
+     老规矩：跟着聊天里我给的代码，一段一段自己敲进下面的 style 里。
+     每敲完一段：Ctrl + S 保存 → 右键这个文件 → Open with Live Server，
+     在浏览器里看页面变了没有。
+
+     跟练清单：
+       1. 选择器：给 body / h1 上第一条样式
+       2. 类选择器：给 .intro 上样式
+       3. padding 内边距
+       4. border 边框
+       5. margin 外边距
+       6. 综合：给演示块上全套盒模型
+
+     body 里的 HTML 今天不用改，只写 CSS。
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>CSS 跟练</title>
+
+  <style>
+    /* ---- 跟练 1：选择器（在下面敲）----
+       目标：给 body 设 font-family 和 background-color
+             给 h1 设 color 和 text-align: center
+       提示：一条样式写成 "属性: 值;"，末尾那个分号千万别丢
+    */
+
+
+
+    /* ---- 跟练 2：类选择器（用 .类名 选元素）----
+       目标：给 .intro 设 color 和 font-size，让它变成灰色小字
+    */
+
+
+
+    /* ---- 跟练 3：内边距 padding ----
+       目标：给 .card 设 padding: 16px，文字就会离边框远一点
+    */
+
+
+
+    /* ---- 跟练 4：边框 border ----
+       目标：给 .card 设 border: 1px solid #ddd 和 border-radius: 8px
+    */
+
+
+
+    /* ---- 跟练 5：外边距 margin ----
+       目标：给 .card 设 margin-bottom: 12px，两张卡片之间就有缝了
+    */
+
+
+
+    /* ---- 跟练 6：综合（盒模型四件套一起上）----
+       目标：给 .box-demo 设 background-color + padding + border + margin
+             然后自己改几次颜色和数值，观察页面怎么变
+    */
+
+
+
+  </style>
+</head>
+<body>
+  <h1>龙丹丹</h1>
+  <p class="intro">学习日 5：今天要把 CSS 盒模型弄明白。</p>
+
+  <div class="card">
+    <h2>我在学</h2>
+    <ul>
+      <li>HTML</li>
+      <li>CSS</li>
+      <li>JavaScript</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>找我</h2>
+    <a href="https://github.com/longdandan-dev">我的 GitHub</a>
+  </div>
+
+  <div class="box-demo">
+    我是盒模型演示块：padding 撑开里面，border 画边框，margin 推开别人。
+  </div>
+</body>
+</html>

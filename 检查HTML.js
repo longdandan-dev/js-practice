@@ -23,6 +23,8 @@ const KNOWN = new Set(["html", "head", "body", "title", "meta", "link", "style",
 function checkFile(file) {
   const src = fs.readFileSync(file, "utf8");
   const noComment = src.replace(/<!--[\s\S]*?-->/g, "");
+  // style / script 里的内容不是页面上显示的文字，扫标签和文字时都先掏空
+  const markup = noComment.replace(/<(style|script)\b[^>]*>[\s\S]*?<\/\1>/gi, "<$1></$1>");
 
   const stack = [];
   const unknown = [];
@@ -32,7 +34,7 @@ function checkFile(file) {
   const re = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)((?:"[^"]*"|'[^']*'|[^>"'])*?)(\/?)>/g;
   let m;
 
-  while ((m = re.exec(noComment)) !== null) {
+  while ((m = re.exec(markup)) !== null) {
     const closing = m[1] === "/";
     const name = m[2].toLowerCase();
     const selfClose = m[4] === "/";
@@ -81,7 +83,7 @@ function checkFile(file) {
   console.log("[5] 用到的标签：" + [...new Set(tags)].join(" "));
   console.log("");
   console.log("[6] 页面上会出现的文字：");
-  console.log("      " + noComment.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  console.log("      " + markup.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
   console.log("");
   console.log("----------------------------------------");
   console.log("");

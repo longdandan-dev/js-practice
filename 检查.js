@@ -69,6 +69,33 @@ const days = [
       ],
     ],
   },
+  {
+    file: "11-数组练习.js",
+    title: "学习日 5 · 数组入门（5 题）",
+    rules: [
+      [
+        1,
+        "建数组 + 长度 + 第一首/最后一首",
+        (c) => c.code("[") && c.code("length") && c.has(1, "5"),
+      ],
+      [
+        2,
+        "push 加一首、pop 弹一首（6 → 5）",
+        (c) =>
+          c.code("push") &&
+          c.code("pop") &&
+          c.linesOf(2).some((l) => l.includes("6")) &&
+          c.linesOf(2).some((l) => l.includes("5")),
+      ],
+      [
+        3,
+        "for 遍历打印每首歌 + 总数",
+        (c) => c.code("for") && c.linesOf(3).length >= 6 && c.has(3, "5"),
+      ],
+      [4, "求和 + 找最大值（79 和 33）", (c) => c.has(4, "79") && c.has(4, "33")],
+      [5, "倒着遍历拼成 54321", (c) => c.has(5, "54321")],
+    ],
+  },
 ];
 
 function loadPractice(file) {
