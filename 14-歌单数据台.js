@@ -23,7 +23,14 @@
 // 打印一行："1) 一共 5 首歌"
 
 // TODO: 在这里写你的代码
-
+const playlist = [
+   {name:"晴天" ,singer:"周杰伦", time:269, album:"叶惠美"},
+   {name:"稻香" ,singer:"周杰伦", time:223, album:"魔杰座"},
+   {name:"烟火里的尘埃" ,singer:"华晨宇", time:265, album:"卡西莫多的礼物"},
+   {name:"多远都要在一起" ,singer:"邓紫棋", time:232, album:"新的心跳"},
+   {name:"喜欢你" ,singer:"邓紫棋", time:250, album:"新的心跳"}
+];
+console.log("1) 一共", playlist.length,"首歌");
 
 
 // ===== 练习 2：用 map 生成"歌名 - 歌手"的列表 =====
@@ -36,6 +43,12 @@
 // 提示：map 的回调里返回 `item.name + " - " + item.singer`
 
 // TODO: 在这里写你的代码
+const result = playlist.map((item) =>{
+   return item.name + " - " + item.singer;
+});
+result.forEach((item) =>{
+   console.log("2)",item);
+})
 
 
 
@@ -45,8 +58,8 @@
 // 提示：filter 返回的是新数组，长度用 .length
 
 // TODO: 在这里写你的代码
-
-
+const jay = playlist.filter((item)=> item.singer ==="周杰伦");
+console.log("3)周杰伦的歌有",jay.length,"首");
 
 // ===== 练习 4：算总时长，并把秒换算成 分 秒 =====
 // 要求：用 for 循环把 5 首歌的 time（秒）累加起来（不许直接写 1239）
@@ -54,8 +67,11 @@
 // 提示：分钟 = Math.floor(总秒数 / 60)；剩下的秒 = 总秒数 % 60
 
 // TODO: 在这里写你的代码
-
-
+let sum = 0;
+for(let i = 0;i<playlist.length;i++) {
+   sum = sum + playlist[i].time;
+};
+console.log("4)所有歌曲一共",Math.floor(sum / 60),"分", Math.floor(sum %60 ),"秒")
 
 // ===== 练习 5：找出时长最长的那首歌 =====
 // 要求：用 for 循环比较，找出 time 最大的那首歌（不许用 Math.max）
@@ -63,15 +79,21 @@
 // 提示：先记 let longest = playlist[0]，再一首一首比
 
 // TODO: 在这里写你的代码
-
-
+let longest = playlist[0];
+for(let i =1;i<playlist.length;i++){
+   if(playlist[i].time > longest.time){
+      longest = playlist[i];
+   }
+}
+console.log("5) 最长的是",longest.name, longest.time,"秒");
 
 // ===== 练习 6：筛出时长超过 240 秒的歌 =====
 // 要求：用 filter 筛出 time 大于 240 的歌
 //       打印："6) 超过 240 秒的有 3 首"
 
 // TODO: 在这里写你的代码
-
+const over240 = playlist.filter((item) => item.time > 240);
+console.log("6) 超出240秒的有",over240.length,"首");
 
 
 /* ===== 写完之后 =====
