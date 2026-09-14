@@ -1,0 +1,159 @@
+<!-- ============================================================
+     阶段 0 · 模块 2 跟练本 B（事件 + 表单 + localStorage）
+     ------------------------------------------------------------
+     老规矩：一段一段敲进下面的 <script>，每段存一次，在浏览器里试效果。
+     打开方式：右键 → Open with Live Server，F12 看控制台
+
+     跟练清单：
+       7. 点击事件：addEventListener("click", ...)
+       8. 读输入框的值：input.value
+       9. 表单提交 + 阻止默认行为：e.preventDefault()
+      10. 把数组渲染成列表（连回模块 1 的 map / forEach）
+      11. 事件委托：事件挂在 ul 上，点 li 才处理
+      12. localStorage：存进去、读出来、刷新还在（用 JSON 转格式）
+
+     body 里的 HTML 不用改，只写 <script> 里的 JS。
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>事件与表单跟练</title>
+  <style>
+    body {
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      padding: 24px;
+      background-color: #f5f7fa;
+    }
+    h1 { color: #1a73e8; }
+    hr { margin: 24px 0; border: none; border-top: 1px solid #dddddd; }
+
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+      border: 1px solid #1a73e8;
+      border-radius: 6px;
+      background-color: #1a73e8;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    button.plain {
+      background-color: #ffffff;
+      color: #1a73e8;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #dddddd;
+      border-radius: 6px;
+      width: 240px;
+    }
+
+    ul { padding-left: 20px; }
+    li { padding: 6px 0; }
+    .done { color: #999999; text-decoration: line-through; }
+  </style>
+</head>
+<body>
+  <h1>事件与表单跟练</h1>
+
+  <button id="btn">点我</button>
+  <p id="out">点按钮之前的样子</p>
+
+  <hr>
+
+  <form id="form">
+    <input id="input" type="text" placeholder="写点什么，然后回车">
+    <button type="submit">添加</button>
+  </form>
+  <ul id="list"></ul>
+
+  <hr>
+
+  <button id="save" class="plain">存进 localStorage</button>
+  <button id="clear" class="plain">清空 localStorage</button>
+  <p id="saved">这里显示 localStorage 里存了什么</p>
+
+  <script>
+    /* ---- 跟练 7：点击事件 ----
+       目标：点 #btn，把 #out 的文字改成 "你点了我一下"
+       提示：元素.addEventListener("click", function () { ... });
+             "click" 是事件名，后面那个函数叫"回调"，点一次就跑一次
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 8：读输入框的值 ----
+       目标：点 #btn 的时候，把输入框里现在写的内容打印出来
+             如果输入框是空的，就打印 "输入框是空的"
+       提示：读值是 input.value（不用加括号）；判断空用 if (值 === "")
+             顺手认识一下 .trim()：它能去掉两头多余的空格，两个空格也算空
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 9：表单提交 + 阻止默认行为 ----
+       目标：在表单里回车或点"添加"，把输入的内容当作一个 <li> 加进 #list，然后清空输入框
+       提示：表单提交会"刷新页面"（这是浏览器默认行为），所以要先挡住它：
+             form.addEventListener("submit", function (e) {
+               e.preventDefault();   // 就是这一行挡住刷新
+               ...
+             });
+             清空输入框：input.value = "";
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 10：把数组渲染成列表 ----
+       目标：先准备一个数据数组（见下面我给的初始数据），
+             写一个 render 函数：清空 #list，然后把每一项造成 <li> 插进去
+             每项显示 item.text，并且：done 是 true 的加上类名 "done"
+       提示：先 document.querySelector("#list").innerHTML = ""; 清空
+             再用 todos.forEach(...) 一项一项造（就是跟练 5 的动作，放进循环里）
+             改完数据以后，再调一次 render()，页面就跟着变了
+       在下面敲：
+    */
+    const todos = [
+      { text: "背 20 个单词", done: false },
+      { text: "练 30 分钟 JS", done: true },
+    ];
+
+
+
+    /* ---- 跟练 11：事件委托（点 li 就切换完成状态）----
+       目标：点列表里的任意一条，它的"完成状态"就切换（加上/去掉 done 类名）
+       提示：不要给每个 li 单独挂事件，挂在 ul 上：
+             list.addEventListener("click", function (e) { ... });
+             被点的那个元素在 e.target 里。先 e.target.classList.toggle("done") 试试
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 12：localStorage（刷新不丢的魔法）----
+       目标：点 #save 把 todos 存进去；页面一打开就把存的东西读出来打印；
+             点 #clear 清掉，再刷新页面看它还剩下什么
+       提示：localStorage 只能存字符串，数组要先转格式：
+             存：localStorage.setItem("todos", JSON.stringify(todos));
+             读：const saved = JSON.parse(localStorage.getItem("todos"));
+             注意：读出来可能是 null（第一次打开时啥也没有），要先判断
+       在下面敲：
+    */
+
+
+
+    /* ===== 敲完之后 =====
+       试这几件事，把结果发我：
+       1. 输入"跑步"，点添加 —— 列表里出现了吗？
+       2. 点一下列表里的一条 —— 有划线吗？
+       3. 点"存进 localStorage"，然后按 F5 刷新 —— 数据还在吗？
+       4. F12 → Application → Local Storage，看看里面存了一行长什么样
+    */
+  </script>
+</body>
+</html>

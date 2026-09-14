@@ -1,0 +1,127 @@
+<!-- ============================================================
+     阶段 0 · 模块 2 跟练本 A（DOM：让 JS 改页面）
+     ------------------------------------------------------------
+     老规矩：跟着聊天里我给的代码，一段一段自己敲进下面的 <script>。
+     每敲完一段：
+       1. Ctrl + S 保存
+       2. 右键这个文件 → Open with Live Server
+       3. 按 F12 打开控制台，看 console.log 打印了什么，看页面变了没有
+
+     跟练清单：
+       1. 找到元素：querySelector / querySelectorAll
+       2. 读和改文字：textContent
+       3. 改样式：元素.style.xxx（注意驼峰命名）
+       4. 开关类名：classList（今天最重要的一招）
+       5. 凭空造元素：createElement + append
+       6. 删掉元素：remove()
+
+     body 里的 HTML 今天不用改，只在 <script> 里写 JS。
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>DOM 跟练</title>
+  <style>
+    body {
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      padding: 24px;
+      background-color: #f5f7fa;
+    }
+    h1 { color: #1a73e8; }
+    .desc { color: #888888; font-size: 14px; }
+
+    #list { padding-left: 20px; }
+    .item { padding: 6px 0; }
+
+    /* 跟练 4 用到的类：加上 .done 的条目会变身 */
+    .done {
+      color: #999999;
+      text-decoration: line-through;
+    }
+
+    #box {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">待办清单（DOM 跟练）</h1>
+  <p class="desc">今天要学会：用 JS 改这个页面</p>
+
+  <ul id="list">
+    <li class="item">第一条（写在 HTML 里的）</li>
+    <li class="item">第二条（写在 HTML 里的）</li>
+  </ul>
+
+  <div id="box">我是一个盒子</div>
+
+  <script>
+    /* ---- 跟练 1：找到元素 ----
+       目标：用 document.querySelector 找到 #title，存进变量，console.log 看看它长什么样
+             再用 document.querySelectorAll(".item") 找到所有 .item，打印它的长度
+       提示：querySelector 找"第一个"；querySelectorAll 找"全部"（结果像数组，有 .length）
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 2：读和改文字 ----
+       目标：先打印 #title 现在的文字，再把它改成 "我今天要练 DOM"，再打印一次确认
+       提示：读是 元素.textContent，改是 元素.textContent = "新文字"
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 3：改样式 ----
+       目标：给 #box 加上背景色和字号
+       注意：CSS 里写 background-color，JS 里要写 backgroundColor
+             （横杠去掉，后面那个字母变大写，这叫驼峰命名）
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 4：开关类名（今天最重要的一招）----
+       目标：给第一个 .item 加上类名 "done"，看它变成灰色加划线
+             然后依次试 classList.remove("done") / classList.toggle("done") / classList.contains("done")
+       提示：document.querySelectorAll(".item")[0].classList.add("done")
+             一步一保存，看清每次页面和控制台的变化
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 5：凭空造一个元素 ----
+       目标：用 document.createElement 造一个 <li>，文字写 "第三条（JS 造出来的）"，
+             类名加上 item，再插到 #list 的最后
+       提示：const li = document.createElement("li");
+             li.textContent = "第三条（JS 造出来的）";
+             li.classList.add("item");
+             document.querySelector("#list").append(li);
+       在下面敲：
+    */
+
+
+
+    /* ---- 跟练 6：删掉一个元素 ----
+       目标：把 #box 从页面上删掉
+       提示：找到它，然后调 .remove()
+       在下面敲：
+    */
+
+
+    /* ===== 敲完之后 =====
+       1. 浏览器里页面变成了什么样
+       2. 控制台打印了什么（F12 → Console）
+       把这两样发我，有红字报错就整段发
+    */
+  </script>
+</body>
+</html>

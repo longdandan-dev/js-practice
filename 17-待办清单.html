@@ -1,0 +1,215 @@
+<!-- ============================================================
+     阶段 0 · 模块 2 产出：待办清单 v1
+     ------------------------------------------------------------
+     这是"作品"，不是练习题。做完它就是能给人看的第一个页面。
+     HTML 和 CSS 我已经给你了，不用改（想美化随你），
+     你要做的是把下面 <script> 里的 TODO 全部写出来。
+
+     要求（做完逐条对一遍）：
+       题1 渲染：页面一打开，把 todos 数组渲染成列表
+       题2 添加：输入内容后回车或点"添加"能加一条；空的、纯空格的不能加；
+                 加完输入框要清空
+       题3 勾选：点某一条，切换"完成"状态（样式变灰划线）
+       题4 删除：每一条右边有个"删除"按钮，点了能删掉
+       题5 不丢：刷新页面数据还在（localStorage）
+       题6 统计（加分）：底部"还剩 N 件"跟着变
+
+     数据长这样（和模块 1 一样，数组里放对象）：
+       const todos = [{ text: "写作业", done: false }];
+
+     验收方式（做完自己先过一遍，再发我）：
+       1. 页面打开 —— 有过两条示例待办（写在 HTML 下面那个初始数组里）
+       2. 输入"跑步"，回车 —— 列表多一条，输入框空了
+       3. 什么都不输入直接回车 —— 不新增
+       4. 点"跑步" —— 变灰划线
+       5. 点某条的"删除" —— 它消失
+       6. F5 刷新 —— 刚才的增删改都还在
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>我的待办清单</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 40px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      background-color: #ffffff;
+      border: 1px solid #e6e8eb;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 22px;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      margin: 0 0 20px 0;
+      font-size: 13px;
+      color: #888888;
+    }
+
+    form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    input:focus { border-color: #1a73e8; }
+
+    button {
+      padding: 10px 18px;
+      font-size: 14px;
+      border: 1px solid #1a73e8;
+      border-radius: 8px;
+      background-color: #1a73e8;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    ul { list-style: none; margin: 0; padding: 0; }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f2f5;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    li .text { flex: 1; }
+
+    li.done .text {
+      color: #999999;
+      text-decoration: line-through;
+    }
+
+    .del {
+      padding: 4px 10px;
+      font-size: 12px;
+      border: 1px solid #dddddd;
+      border-radius: 6px;
+      background-color: #ffffff;
+      color: #d93025;
+      cursor: pointer;
+    }
+
+    .count {
+      margin: 16px 0 0 0;
+      font-size: 13px;
+      color: #888888;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>我的待办清单</h1>
+    <p class="subtitle">阶段 0 · 模块 2 产出 · 龙丹丹</p>
+
+    <form id="form">
+      <input id="input" type="text" placeholder="今天要做什么？回车添加">
+      <button type="submit">添加</button>
+    </form>
+
+    <ul id="list"></ul>
+
+    <p class="count" id="count">还剩 0 件</p>
+  </div>
+
+  <script>
+    /* ===== 数据（这两条是示例，留着用来验证渲染）===== */
+    let todos = [
+      { text: "练 30 分钟 JS", done: false },
+      { text: "背 20 个单词", done: false },
+    ];
+
+    /* ---- TODO 题1：渲染 ----
+       把 todos 渲染成 <li>：
+         每条 li 里要有：一个显示文字的元素（class="text"）、一个删除按钮（class="del"，文字写"删除"）
+         done 为 true 的 li 要带上类名 "done"
+       写法参考跟练 10：
+         先清空 #list，再 forEach 数据，每项 createElement("li") 造出来，最后 append 进去
+       在下面敲：
+    */
+
+
+
+    /* ---- TODO 题2：添加 ----
+       表单提交时：
+         1. 挡住页面刷新（跟练 9）
+         2. 取输入框的值，去掉两头空格；如果是空的就直接 return，不新增
+         3. 往 todos 里 push 一个新对象 { text: 值, done: false }
+         4. 重新渲染，并把输入框清空
+       在下面敲：
+    */
+
+
+
+    /* ---- TODO 题3 + 题4：勾选 和 删除 ----
+       这两件事都发生在"点列表里的东西"的时候，所以用跟练 11 的事件委托，挂在 #list 上：
+         点删除按钮（怎么认出它？看 e.target 有没有 del 这个类）→ 从 todos 里删掉对应那一条
+         点条目本身 → 把对应那条的 done 取反（!todos[i].done），再重新渲染
+       提示：删数组里的某一项用 todos.splice(下标, 1)
+             怎么知道点的是第几条？造 li 的时候给它的 dataset 里存一下下标：li.dataset.index = i
+             用的时候读 e.target.dataset.index（读出来是字符串，要转成数字）
+       在下面敲：
+    */
+
+
+
+    /* ---- TODO 题5：刷新不丢 ----
+       两件事：
+         1. 数据一变（添加/勾选/删除之后）就存进 localStorage（跟练 12）
+         2. 页面一打开，先看看 localStorage 里有没有存过：
+              有 → 用存的数据把 todos 覆盖掉，再渲染
+              没有 → 用上面那两条示例，直接渲染
+       提示：JSON.stringify 存、JSON.parse 读；读出来是 null 就是没存过
+       在下面敲：
+    */
+
+
+
+    /* ---- TODO 题6（加分）：统计 ----
+       底部"还剩 N 件"：N = todos 里 done 为 false 的条数（提示：filter + length）
+       每次重新渲染完都要更新它
+       在下面敲：
+    */
+
+
+
+    /* ===== 写完之后 =====
+       1. 浏览器里跑一遍上面"验收方式"的 6 步，哪步不对先自己找原因
+       2. 终端里跑：node 检查DOM.js
+       3. 把两部分结果都发我
+    */
+  </script>
+</body>
+</html>
