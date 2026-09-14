@@ -15,6 +15,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 
 const dir = __dirname;
 
@@ -60,6 +61,10 @@ const extras = [
   [
     /\bconsole\.(?!log\b|error\b|warn\b|info\b|table\b|dir\b|clear\b|time\b|timeEnd\b|count\b|group\b|groupEnd\b|trace\b|assert\b|debug\b)[A-Za-z_$][\w$]*/,
     "console 后面只能跟 log / error / warn / info / table，别的方法名浏览器不认识",
+  ],
+  [
+    /\breturn\s*\(\s*\)/,
+    "return 是关键字不是函数，不能写成 return()；是不是想调用自己写的某个函数（比如 render()）？",
   ],
 ];
 
@@ -192,9 +197,69 @@ function checkUndeclared(code, rawLines) {
 
 const hits = [];
 
+// 语法检查：把每个 <script> 交给 JS 引擎"编译一遍"（只编译，不执行）。
+// 有语法错的话整段脚本一行都不会跑，浏览器只丢一句红字，非常难找，所以提前查。
+function checkSyntax(file, raw) {
+  const blocks = [];
+  if (/\.html$/i.test(file)) {
+    // 先挖掉 HTML 注释：文件开头的说明里也写着 <script>，不处理会被它带偏
+    const source = raw.replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, " "));
+    const re = /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi;
+    let mm;
+    while ((mm = re.exec(source))) {
+      const lineOfTag = source.slice(0, mm.index).split("\n").length;
+      blocks.push({ code: mm[1], offset: lineOfTag - 1 });
+    }
+  } else {
+    blocks.push({ code: raw, offset: 0 });
+  }
+
+  const found = [];
+  for (const b of blocks) {
+    try {
+      new vm.Script(b.code);
+    } catch (e) {
+      const hit = String(e.stack || "").match(/evalmachine\.<anonymous>:(\d+)/);
+      const innerLine = hit ? Number(hit[1]) : 1;
+      found.push({
+        line: b.offset + innerLine,
+        msg:
+          "语法错误 —— 这类错会让整段脚本一行都不跑：" +
+          humanizeSyntaxError(e.message),
+      });
+    }
+  }
+  return found;
+}
+
+// 把引擎给的英文报错翻译成人话
+function humanizeSyntaxError(msg) {
+  if (/Illegal return statement/.test(msg)) {
+    return msg + "（return 是关键字，不能当函数调用；是不是想写 render() 之类自己写的函数？）";
+  }
+  if (/Invalid or unexpected token/.test(msg)) {
+    return msg + "（多半是多了个不能识别的字符，或者引号、括号少了一半）";
+  }
+  if (/already been declared/.test(msg)) {
+    return msg + "（同一个名字用 const / let 声明了两次，改名或者直接用原来那个）";
+  }
+  if (/missing \)|\bmissing \)/.test(msg) || /Unexpected end of input/.test(msg)) {
+    return msg + "（括号或花括号没配对，检查是不是少写了一个 } 或 )）";
+  }
+  if (/Unexpected token/.test(msg)) {
+    return msg + "（多半是少了逗号、括号或引号）";
+  }
+  return msg;
+}
+
 for (const file of files) {
   const raw = fs.readFileSync(path.join(dir, file), "utf8");
   const rawLines = raw.split(/\r?\n/);
+
+  // 语法错最致命，先报它
+  for (const v of checkSyntax(file, raw)) {
+    hits.push({ file, line: v.line, content: (rawLines[v.line - 1] || "").trim().slice(0, 70), msg: v.msg });
+  }
 
   // 只看代码：HTML 里非 <script> 的部分（含 <style>、注释）先挖空，
   // 再去掉注释和字符串，这样 CSS 和说明文字不会被误报
