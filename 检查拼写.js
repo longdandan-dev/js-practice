@@ -50,6 +50,11 @@ const rules = [
   [/\bdocuemnt\b|\bdocment\b|\bdoccument\b/, "document 拼错了"],
   [/\blenght\b|\blengt\b/, "length 拼错了"],
   [/\.style\.[a-zA-Z]+-[a-z]+\s*=/, "JS 里要写驼峰，例如 background-color 要写成 backgroundColor"],
+  [/\bawit\b|\bawiat\b|\bawaiit\b/, "await 拼错了（a-w-a-i-t）"],
+  [/\basycn\b|\basnyc\b|\basyn\b|\bfnction\b/, "async / function 拼错了（async 是 a-s-y-n-c）"],
+  [/\bPromsie\b|\bpromsie\b|\bPromis\b/, "Promise 拼错了（P 大写，中间是 mise）"],
+  [/\breslove\b|\bResolve\b/, "resolve 拼错了（re + solve）"],
+  [/\brejct\b|\brejeect\b|\bReject\b/, "reject 拼错了（re + ject）"],
 ];
 
 // 附加项（2026-09-14 加：这三种都真实出现过）
@@ -199,6 +204,47 @@ function checkTags(code, rawLines) {
         text: (rawLines[line - 1] || "").trim().slice(0, 70),
       });
     }
+  }
+  return out;
+}
+
+// 查编辑器"好心"自动补的导入（2026-09-15 新加：打 resolve 时 VS Code 自己加了两行 require）
+function checkAutoImport(code, rawLines) {
+  const out = [];
+  const re = /require\(\s*["']node:[^"']+["']\s*\)/g;
+  let m;
+  while ((m = re.exec(code))) {
+    const line = code.slice(0, m.index).split("\n").length;
+    out.push({
+      line,
+      msg:
+        "这一行多半不是你写的，是编辑器自动帮你补的导入（你打 resolve 的时候它顺手加的）。" +
+        "练习文件里不需要 require / import，整行删掉。",
+      text: (rawLines[line - 1] || "").trim().slice(0, 70),
+    });
+  }
+  return out;
+}
+
+// 查 console.time / console.timeEnd 是不是配成了一对（标签名必须一模一样）
+function checkTimers(code, rawLines) {
+  const out = [];
+  const starts = new Set();
+  let m;
+  const reStart = /console\.time\(\s*["']([^"']+)["']\s*\)/g;
+  while ((m = reStart.exec(code))) starts.add(m[1]);
+
+  const reEnd = /console\.timeEnd\(\s*["']([^"']+)["']\s*\)/g;
+  while ((m = reEnd.exec(code))) {
+    if (starts.has(m[1])) continue;
+    const line = code.slice(0, m.index).split("\n").length;
+    out.push({
+      line,
+      msg:
+        "timeEnd(\"" + m[1] + "\") 找不到配对的开关：上面要有一句 console.time(\"" + m[1] + "\")。" +
+        "检查是不是把 console.time 写成了 console.log。",
+      text: (rawLines[line - 1] || "").trim().slice(0, 70),
+    });
   }
   return out;
 }
@@ -356,6 +402,14 @@ for (const file of files) {
   }
 
   for (const v of checkTags(codeRaw, rawLines)) {
+    hits.push({ file, line: v.line, content: v.text, msg: v.msg });
+  }
+
+  for (const v of checkAutoImport(codeRaw, rawLines)) {
+    hits.push({ file, line: v.line, content: v.text, msg: v.msg });
+  }
+
+  for (const v of checkTimers(codeRaw, rawLines)) {
     hits.push({ file, line: v.line, content: v.text, msg: v.msg });
   }
 }
