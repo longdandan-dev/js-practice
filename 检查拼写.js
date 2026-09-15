@@ -63,6 +63,14 @@ const extras = [
     "console 后面只能跟 log / error / warn / info / table，别的方法名浏览器不认识",
   ],
   [
+    /\bclassList\.(?!add\b|remove\b|toggle\b|contains\b|replace\b|item\b|length\b|value\b|entries\b|forEach\b|keys\b|values\b)[A-Za-z_$][\w$]*/,
+    "classList 只有 add / remove / toggle / contains 这几个方法（想加类名用 add）",
+  ],
+  [
+    /\blocalStorage\.(?!setItem\b|getItem\b|removeItem\b|clear\b|key\b|length\b)[A-Za-z_$][\w$]*/,
+    "localStorage 只有 setItem / getItem / removeItem / clear 这几个方法",
+  ],
+  [
     /\breturn\s*\(\s*\)/,
     "return 是关键字不是函数，不能写成 return()；是不是想调用自己写的某个函数（比如 render()）？",
   ],
