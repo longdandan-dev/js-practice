@@ -87,6 +87,10 @@ const extras = [
     "appendChild / removeChild 有大小写：中间那个 C 要大写",
   ],
   [
+    /setItem\([^,]+,\s*[\[{]/,
+    "setItem 的第二个参数不能直接放数组或对象，先用 JSON.stringify 打包成字符串",
+  ],
+  [
     /\breturn\s*\(\s*\)/,
     "return 是关键字不是函数，不能写成 return()；是不是想调用自己写的某个函数（比如 render()）？",
   ],
