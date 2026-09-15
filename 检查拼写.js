@@ -59,6 +59,10 @@ const rules = [
     /\b(res|data|item|repo|err|error)\s*,\s*(status|ok|json|body|length|name|message|text|done|value)\b/,
     "这里要用点不是逗号：比如 res.status、data.length（逗号会把两个值分开，读出来是 undefined）",
   ],
+  [
+    /(?<![\w$.])([A-Za-z_$][\w$]*)-([A-Za-z_$][\w$]*)\b/,
+    "JS 里没有带横杠的变量名：repo-name 是“变量 repo 减变量 name”。要用你自己声明的那个变量（比如 reponame）",
+  ],
 ];
 
 // 附加项（2026-09-14 加：这三种都真实出现过）
@@ -403,6 +407,27 @@ function checkDeclOrder(code, rawLines) {
   return out;
 }
 
+// 查 await 和 .then 混着写（2026-09-15 新加：await fetch(...).then(...) 这条式子最坑）
+function checkMixedAwaitThen(code, rawLines) {
+  const out = [];
+  // 允许 .then 写在下一行（很多人这么写），但中间不能出现分号（那说明是两句不相干的代码）
+  const re = /await[\s\S]{0,200}?\.then\s*\(/g;
+  let m;
+  while ((m = re.exec(code))) {
+    if (m[0].includes(";")) continue;
+    const line = code.slice(0, m.index).split("\n").length;
+    out.push({
+      line,
+      msg:
+        "await 和 .then 不要混着用。两种写法二选一：" +
+        "只用 await（const res = await fetch(url); 然后再 await res.json()），" +
+        "或者只用 .then（fetch(url).then(res => res.json()).then(data => ...)）。",
+      text: (rawLines[line - 1] || "").trim().slice(0, 70),
+    });
+  }
+  return out;
+}
+
 // 查"用了但没声明过的名字"（变量名拼错就是这么来的）
 function checkUndeclared(code, rawLines) {
   const declared = new Set();
@@ -578,6 +603,10 @@ for (const file of files) {
 
   // 声明顺序这类结构问题，用"去掉注释和字符串"的版本分析，行号一样，但不会被字符串里的括号带偏
   for (const v of checkDeclOrder(code, rawLines)) {
+    hits.push({ file, line: v.line, content: v.text, msg: v.msg });
+  }
+
+  for (const v of checkMixedAwaitThen(code, rawLines)) {
     hits.push({ file, line: v.line, content: v.text, msg: v.msg });
   }
 }
