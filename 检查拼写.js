@@ -55,6 +55,10 @@ const rules = [
   [/\bPromsie\b|\bpromsie\b|\bPromis\b/, "Promise 拼错了（P 大写，中间是 mise）"],
   [/\breslove\b|\bResolve\b/, "resolve 拼错了（re + solve）"],
   [/\brejct\b|\brejeect\b|\bReject\b/, "reject 拼错了（re + ject）"],
+  [
+    /\b(res|data|item|repo|err|error)\s*,\s*(status|ok|json|body|length|name|message|text|done|value)\b/,
+    "这里要用点不是逗号：比如 res.status、data.length（逗号会把两个值分开，读出来是 undefined）",
+  ],
 ];
 
 // 附加项（2026-09-14 加：这三种都真实出现过）
@@ -249,6 +253,66 @@ function checkTimers(code, rawLines) {
   return out;
 }
 
+// 查同一个文件里重名的函数（2026-09-15 新加：两个 getRepos 互相顶掉，白写一段）
+function checkDuplicateFunctions(code, rawLines) {
+  const out = [];
+  const re = /\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g;
+  const seen = new Map();
+  let m;
+  while ((m = re.exec(code))) {
+    const name = m[1];
+    const line = code.slice(0, m.index).split("\n").length;
+    if (!seen.has(name)) {
+      seen.set(name, line);
+      continue;
+    }
+    out.push({
+      line,
+      msg:
+        "`" + name + "` 这个函数名上面第 " + seen.get(name) + " 行已经用过了。" +
+        "同名函数后面那个会把前面那个顶掉（前面的等于白写），给它改个名字。",
+      text: (rawLines[line - 1] || "").trim().slice(0, 70),
+    });
+  }
+  return out;
+}
+
+// 查 err / error 是不是被用在了 catch 外面（2026-09-15 新加）
+function checkErrScope(code, rawLines) {
+  const out = [];
+  const lines = code.split(/\r?\n/);
+
+  // 看到 err.xxx，但往上 8 行内既没有 catch (err，也没有 const err = → 说明它在 catch 外面
+  lines.forEach((line, i) => {
+    const m = line.match(/\b(err|error)\s*\./);
+    if (!m) return;
+    const name = m[1];
+
+    let declaredNearby = false;
+    let catchNearby = false;
+    for (let j = Math.max(0, i - 8); j <= i; j++) {
+      if (new RegExp("(const|let|var)\\s+" + name + "\\b").test(lines[j])) declaredNearby = true;
+      if (new RegExp("catch\\s*\\(\\s*" + name + "\\b").test(lines[j])) catchNearby = true;
+      if (new RegExp("=>\\s*" + name + "\\b").test(lines[j])) declaredNearby = true;
+    }
+
+    if (declaredNearby || catchNearby) return;
+    out.push({
+      line: i + 1,
+      msg:
+        "`" + name + "` 这个名字只活在 catch 里面（它是错误对象），这里用它会报 \"" + name + " is not defined\"。" +
+        "要用它，就把这行挪进 catch 块里。",
+      text: (rawLines[i] || "").trim().slice(0, 70),
+    });
+  });
+
+  const uniq = [];
+  for (const o of out) {
+    if (!uniq.some((u) => u.line === o.line)) uniq.push(o);
+  }
+  return uniq;
+}
+
 // 查"用了但没声明过的名字"（变量名拼错就是这么来的）
 function checkUndeclared(code, rawLines) {
   const declared = new Set();
@@ -267,6 +331,7 @@ function checkUndeclared(code, rawLines) {
 
   for (const re of [
     /\bfunction\s*\(([^)]*)\)/g,
+    /\bfunction\s+[A-Za-z_$][\w$]*\s*\(([^)]*)\)/g,
     /\bcatch\s*\(([^)]*)\)/g,
     /\(([^()]*)\)\s*=>/g,
     /(?<![\w$.])([A-Za-z_$][\w$]*)\s*=>/g,
@@ -410,6 +475,14 @@ for (const file of files) {
   }
 
   for (const v of checkTimers(codeRaw, rawLines)) {
+    hits.push({ file, line: v.line, content: v.text, msg: v.msg });
+  }
+
+  for (const v of checkDuplicateFunctions(codeRaw, rawLines)) {
+    hits.push({ file, line: v.line, content: v.text, msg: v.msg });
+  }
+
+  for (const v of checkErrScope(codeRaw, rawLines)) {
     hits.push({ file, line: v.line, content: v.text, msg: v.msg });
   }
 }
