@@ -75,6 +75,18 @@ const extras = [
     "value 是属性不是方法：读用 input.value，清空用 input.value = \"\"（不要加括号）",
   ],
   [
+    /\bcloset\b/,
+    "closest 拼错了（少写一个 s）：从被点的元素往上找最近的 li",
+  ],
+  [
+    /\bcontain\s*\(/,
+    "contains 拼错了（少写一个 s）：判断有没有这个类",
+  ],
+  [
+    /\bappendchild\b|\bappendChid\b|\bremovechild\b/,
+    "appendChild / removeChild 有大小写：中间那个 C 要大写",
+  ],
+  [
     /\breturn\s*\(\s*\)/,
     "return 是关键字不是函数，不能写成 return()；是不是想调用自己写的某个函数（比如 render()）？",
   ],
