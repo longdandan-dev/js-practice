@@ -1,0 +1,220 @@
+<!-- ============================================================
+     模块 3 · 跟练本 B 代码注释版（你写的每一行，逐行讲）
+     ------------------------------------------------------------
+     这份就是你的 19-跟练-fetch.html，代码一行没改，只是加了注释。
+     跑法一样：右键 → Open with Live Server，按 F12 看控制台。
+
+     说明：HTML 和 CSS 是我给你的（你没写），所以只标了关键几处；
+           <script> 里你写的那几行，一行一行讲清楚。
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 这行决定中文显示：charset 写错就会出现乱码 -->
+  <title>fetch 跟练（注释版）</title>
+  <style>
+    /* ===== 下面是页面的长相（CSS），你这次没动它 ===== */
+    body {
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+      padding: 24px;
+    }
+    h1 { color: #1a73e8; font-size: 20px; }
+    .desc { color: #888888; font-size: 14px; }
+
+    /* #status：状态行（加载中 / 出错提示）的颜色 */
+    #status { color: #1a73e8; font-size: 14px; }
+
+    /* #list：列表容器；#list li：每一条卡片的样子 */
+    #list {
+      list-style: none;
+      padding-left: 0;
+      max-width: 520px;
+    }
+    #list li {
+      background-color: #ffffff;
+      border: 1px solid #e6e8eb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>我的仓库（fetch 跟练 · 注释版）</h1>
+  <p class="desc">页面上这几块 HTML 是给 JS 用的"挂钩"，你只在 &lt;script&gt; 里写 JS。</p>
+
+  <!-- id="status"：一行文字，用来显示"加载中…"或者错误原因 -->
+  <p id="status">（这里将来显示加载中 / 出错提示）</p>
+
+  <!-- id="list"：空的列表容器，等 JS 往里塞 li -->
+  <ul id="list"></ul>
+
+  <script>
+    /* ============ 先找到两个"挂钩"，放在最上面 ============ */
+
+    const list = document.querySelector("#list");
+    // document.querySelector("#list")：在页面里找 id="list" 的那个元素
+    // 前面的 # 表示"按 id 找"（#list = id 叫 list；.list = class 叫 list）
+    // const list：把找到的元素存进一个不会变的变量，后面反复用
+
+    const status = document.querySelector("#status");
+    // 同上，找到状态行那个 <p>
+    // ★ 这两行必须写在"用的地方"上面 —— 你上次就是 status 写太靠下，
+    //   才报了 Cannot access 'status' before initialization
+
+
+    /* ============ 跟练 1：最小的一次请求（then 版）============ */
+
+    fetch("https://api.github.com/users/longdandan-dev/repos")
+    // fetch(...)：朝这个网址发请求。它不给你数据，只给你一张"票"（Promise）
+    // 网址最后是 /repos：意思是"这个账号的仓库列表"
+      .then((res) => res.json())
+      // 第一个 .then：等票兑现，拿到 res（响应）——里面有状态码、头信息
+      // (res) => res.json()：把响应交给 res.json()，它又开始解析数据（又是一张票）
+      // 这一行的返回值会传给下一个 .then
+      .then((data) => console.log("拿到几条：", data.length));
+      // 第二个 .then：等解析完，拿到 data（仓库数组）
+      // data.length：数组里有多少条 → 输出"拿到几条： 1"
+
+    // 这一段的两个 .then，就等于下面跟练 2 里的两个 await —— 一个道理，两种写法
+
+
+    /* ============ 跟练 2：async / await 版（两个 await 分别在等什么）============ */
+
+    async function showMyRepos() {
+      // async：声明"这个函数里可以写 await"
+      // showMyRepos：函数名（自己起的，见名知义：显示我的仓库）
+
+      const res = await fetch("https://api.github.com/users/longdandan-dev/repos");
+      // 第一个 await：等"响应"回来，结果存进 res
+      // 少了这个 await，res 就是一张票，读 res.status 会是 undefined
+
+      console.log("状态码", res.status);
+      // res.status：服务器给的状态码。200 = 成功；404 = 找不到；403 = 请求太频繁
+
+      const data = await res.json();
+      // 第二个 await：等"响应体"（一坨 JSON 文字）解析成真正的 JS 数据
+      // res.json() 本身也返回一张票，所以还要 await 一次
+
+      console.log("数据长这样", data[0]);
+      // data 是数组（[ 第一条, 第二条, ... ]），data[0] 是第一条仓库对象
+
+      console.log(data[0].name, data[0].html_url, data[0].description);
+      // .name           仓库名（js-practice）
+      // .html_url       仓库的网页地址
+      // .description    描述；没写过就是 null
+      // （原来你还单独打了几行，后来注释掉了，效果一样）
+    }
+
+    showMyRepos();
+    // 函数写好必须调用，不然永远不会跑
+
+
+    /* ============ 跟练 4（★ 最重要）：带错误处理的版本 ============ */
+
+    async function getRepos(user) {
+      // user：参数。想查谁，就把名字传进来 —— 参数让同一个函数能查不同的人
+      try {
+        // try：这里面的代码"可能会出事"，出事也别让程序崩
+
+        status.textContent = "加载中...";
+        // 请求前先给用户一个交代：网络要几百毫秒，不能让他以为页面坏了
+        // textContent = 改这个元素里的文字
+
+        const res = await fetch("https://api.github.com/users/" + user + "/repos");
+        // 把用户名拼进网址：中间用 + 把三段连起来
+        // user = "longdandan-dev" 时，网址就是 …/users/longdandan-dev/repos
+
+        if (!res.ok) {
+          // res.ok：响应自带的"成功了吗"。状态码 200 多的时候是 true，404/500 是 false
+          // ! 是"取反"：!res.ok 就是"没有成功"
+          throw new Error("接口返回" + res.status);
+          // throw：主动扔出一个错误 —— 扔出去就会被下面的 catch 接住
+          // ★ 关键点：404 这种"服务器回了但结果不好"的情况，
+          //   fetch 自己不会当错误（只有连不上服务器才算），必须我们手动扔
+        }
+
+        const data = await res.json();
+        // 解析数据
+
+        console.log("成功，拿到", data.length, "条");
+        // console.log 可以一次打印好几段：用逗号隔开，逗号会加空格
+
+        render(data);
+        // ★ 把数据交给 render，让它画到页面上（这就是跟练 5 的函数）
+
+        status.textContent = "";
+        // 成功了就把"加载中"清空（空字符串 = 什么都不显示）
+
+      }
+      catch (err) {
+        // 只要 try 里出了任何事，立刻跳到这里；err 里装着原因
+
+        console.log("失败", err.message);
+        // err.message：错误的内容（比如 "接口返回404"）
+
+        status.textContent = "出错了，原因：" + err.message;
+        // 失败也要给用户交代 —— 这就是"不白屏"
+      }
+    }
+
+    getRepos("longdandan-dev");
+    // 正常账号 → 成功
+
+    getRepos("zhegeyonghubucunzai");
+    // 不存在的账号 → 404 → !res.ok 成立 → throw → 走 catch
+    // 两条请求是同时发出的：谁先回来不一定
+    // 后回来的那一句会覆盖 status 里的字 —— 这就是并发的小毛病
+
+
+    /* ============ 跟练 5：把数据画到页面上（老配方）============ */
+
+    function render(repos) {
+      // 参数名随便起。这里叫 repos，意思是"要画的仓库数组"
+
+      list.innerHTML = "";
+      // 先清空容器。不清空的话，每渲染一次就会再堆一份，越堆越多
+
+      repos.forEach((repo) => {
+        // forEach：把数组里的每一个都过一遍
+        // repo 是"当前这一条"（第一个循环它是第 0 条，第二个循环是第 1 条…）
+
+        const li = document.createElement("li");
+        // 凭空造一个 <li>（此刻它还没在页面上）
+
+        li.textContent = repo.name + "(" + repo.language + ")";
+        // 给它写文字：仓库名 (语言)
+        // repo.language 是主要语言，比如 "JavaScript"
+
+        list.append(li);
+        // 把造好的 li 塞进 <ul> 里
+        // ★ 不 append 就等于白造 —— 元素造出来必须"挂"到页面上才看得见
+
+      });
+    }
+
+
+    /* ============ 跟练 6：加载中提示 ============ */
+    /* 这一段你没有单独写，而是直接写进了 getRepos 里（位置完全正确）：
+         请求前   status.textContent = "加载中...";
+         成功后   status.textContent = "";
+         失败后   status.textContent = "出错了，原因：" + err.message;
+       三行分别在第 135、145、150 行附近，这是正统写法。
+
+       产出页里还要多加一步：错误的时候给它加一个 class，让字变红 ——
+         status.classList.add("error");
+       成功的时候再把这个类去掉，不然下一次成功还是红的。
+    */
+
+
+    /* ============ 三句话总结 ============ */
+    /* 1. fetch 是"分两步交货"的：先给响应（res），再给数据（data）→ 所以要两个 await
+       2. 404 不会自己进 catch，必须 if (!res.ok) throw 手动扔
+       3. 拿到数据之后，还是模块 2 那套老配方：createElement + append 画到页面上 */
+  </script>
+</body>
+</html>
