@@ -63,6 +63,13 @@ const rules = [
     /(?<![\w$.])([A-Za-z_$][\w$]*)-([A-Za-z_$][\w$]*)\b/,
     "JS 里没有带横杠的变量名：repo-name 是“变量 repo 减变量 name”。要用你自己声明的那个变量（比如 reponame）",
   ],
+  [/\btolowercase\b|\btolowerCase\b|\bToLowerCase\b/, "toLowerCase 拼错了（to + Lower + Case，L 和 C 要大写）"],
+];
+
+// 写在字符串里的东西（类名、给用户看的文字）——这些只有"保留字符串"的版本才查得到
+const textRules = [
+  [/\bemply\b|\bemty\b|\bemptyy\b/, "empty 拼错了（e-m-p-t-y）；类名拼错，样式就不会生效"],
+  [/(拿得是|没有匹配得|匹配得仓库)/, "中文也看清楚：这里是“的”不是“得”（拿到的是 / 没有匹配的仓库）"],
 ];
 
 // 附加项（2026-09-14 加：这三种都真实出现过）
@@ -366,6 +373,21 @@ function checkDeclOrder(code, rawLines) {
     });
   }
 
+  // 匿名函数表达式：addEventListener("input", function () { ... })
+  const reAnon = /\bfunction\s*\([^)]*\)\s*\{/g;
+  while ((m = reAnon.exec(code))) {
+    const open = m.index + m[0].length - 1;
+    const i = braceEnd(open);
+    funcs.push({
+      name: "",
+      params: [],
+      startLine: code.slice(0, m.index).split("\n").length,
+      bodyStart: open,
+      bodyEnd: i,
+      body: code.slice(open + 1, i),
+    });
+  }
+
   // 2) 收集 const / let 声明
   const decls = [];
   const reDecl = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)/g;
@@ -570,6 +592,17 @@ for (const file of files) {
 
   codeLines.forEach((line, i) => {
     for (const [re, msg] of rules.concat(extras)) {
+      if (re.test(line)) {
+        hits.push({ file, line: i + 1, content: (rawLines[i] || "").trim().slice(0, 70), msg });
+        break;
+      }
+    }
+  });
+
+  // 再看一遍"保留字符串"的版本：类名、页面上给用户看的文字，都写在引号里
+  const rawCodeLines = codeRaw.split(/\r?\n/);
+  rawCodeLines.forEach((line, i) => {
+    for (const [re, msg] of textRules) {
       if (re.test(line)) {
         hits.push({ file, line: i + 1, content: (rawLines[i] || "").trim().slice(0, 70), msg });
         break;
