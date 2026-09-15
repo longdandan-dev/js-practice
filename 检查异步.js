@@ -112,6 +112,11 @@ if (product === null) {
     ["先检查响应是否成功（response.ok 或状态码）", /\.ok\b|status\s*===?\s*200|status\s*>=?\s*400/.test(code)],
     ["有加载中的提示（loading）", /loading|加载中|请稍等|正在加载/i.test(product)],
     ["有出错时的提示文字", /失败|出错|错误|没找到|异常|重试/.test(product)],
+    [
+      "出错时给状态行加了 error 类、成功时又去掉了（变红 / 变回）",
+      /classList\.add\s*\(\s*["']error["']\s*\)/.test(code) &&
+        /classList\.remove\s*\(\s*["']error["']\s*\)/.test(code),
+    ],
     ["搜索用了 filter + toLowerCase", /\.filter\s*\(/.test(code) && /toLowerCase/.test(code)],
     ["搜索前把输入去空格（trim）", /\.trim\s*\(/.test(code)],
     ["搜不到的时候有提示文字", /没有匹配|没有找到|没有搜到|无结果/.test(product)],
