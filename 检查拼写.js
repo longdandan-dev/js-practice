@@ -71,6 +71,10 @@ const extras = [
     "localStorage 只有 setItem / getItem / removeItem / clear 这几个方法",
   ],
   [
+    /\.value\s*\(/,
+    "value 是属性不是方法：读用 input.value，清空用 input.value = \"\"（不要加括号）",
+  ],
+  [
     /\breturn\s*\(\s*\)/,
     "return 是关键字不是函数，不能写成 return()；是不是想调用自己写的某个函数（比如 render()）？",
   ],
@@ -81,6 +85,22 @@ const KEYWORDS = new Set([
   "function", "typeof", "instanceof", "new", "delete", "void", "in", "of", "this",
   "try", "catch", "finally", "throw", "class", "extends", "super", "await", "async", "yield",
 ]);
+
+// 常见 HTML 标签（用于检查 createElement("xxx") 里的标签名对不对）
+const HTML_TAGS = new Set(("a abbr address area article aside audio b base bdi bdo blockquote body br button " +
+    "canvas caption cite code col colgroup data datalist dd details dfn dialog div dl dt em embed fieldset " +
+    "figcaption figure footer form h1 h2 h3 h4 h5 h6 head header hgroup hr html i iframe img input ins kbd " +
+    "label legend li link main map mark menu meta meter nav noscript object ol optgroup option output p param " +
+    "picture pre progress q rp rt ruby s samp script section select slot small source span strong style sub " +
+    "summary sup table tbody td template textarea tfoot th thead time title tr track u ul var video wbr " +
+    "svg path circle rect line g defs use polygon polyline ellipse").split(/\s+/));
+
+const TAG_HINTS = {
+    text: "text 不是 HTML 标签（造一段文字请用 span 或 p）",
+    del: "del 是「删除线文本」标签，会自带一条横线；要做按钮请用 button",
+    delete: "delete 不是 HTML 标签（要做按钮请用 button）",
+    checkbox: "checkbox 不是标签名（要用 <input type=\"checkbox\">）",
+};
 
 const GLOBALS = new Set([
   "document", "window", "console", "localStorage", "sessionStorage", "JSON", "Math",
@@ -134,6 +154,37 @@ function stripNoise(text) {
     .replace(/"[^"\n]*"/g, '""')
     .replace(/'[^'\n]*'/g, "''")
     .replace(/`[^`]*`/g, "``");
+}
+
+// 只去注释，保留字符串（查 createElement("xxx") 这类要看字符串内容）
+function stripComments(text) {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/\/\/[^\n]*/g, " ")
+    .replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, " "));
+}
+
+// 查 createElement("xxx") 里的标签名是不是真的 HTML 标签
+function checkTags(code, rawLines) {
+  const out = [];
+  const re = /createElement\(\s*["']([^"']+)["']\s*\)/g;
+  let m;
+  while ((m = re.exec(code))) {
+    const tag = m[1].trim();
+    const low = tag.toLowerCase();
+    if (TAG_HINTS[low]) {
+      const line = code.slice(0, m.index).split("\n").length;
+      out.push({ line, msg: TAG_HINTS[low], text: (rawLines[line - 1] || "").trim().slice(0, 70) });
+    } else if (!HTML_TAGS.has(low)) {
+      const line = code.slice(0, m.index).split("\n").length;
+      out.push({
+        line,
+        msg: "createElement(\"" + tag + "\") 里的名字不是常见 HTML 标签，检查一下（造文字用 span、做按钮用 button）",
+        text: (rawLines[line - 1] || "").trim().slice(0, 70),
+      });
+    }
+  }
+  return out;
 }
 
 // 查"用了但没声明过的名字"（变量名拼错就是这么来的）
@@ -272,6 +323,7 @@ for (const file of files) {
   // 只看代码：HTML 里非 <script> 的部分（含 <style>、注释）先挖空，
   // 再去掉注释和字符串，这样 CSS 和说明文字不会被误报
   const code = stripNoise(codeTextFor(raw, /\.html$/i.test(file)));
+  const codeRaw = stripComments(codeTextFor(raw, /\.html$/i.test(file)));
   const codeLines = code.split(/\r?\n/);
 
   codeLines.forEach((line, i) => {
@@ -284,6 +336,10 @@ for (const file of files) {
   });
 
   for (const v of checkUndeclared(code, rawLines)) {
+    hits.push({ file, line: v.line, content: v.text, msg: v.msg });
+  }
+
+  for (const v of checkTags(codeRaw, rawLines)) {
     hits.push({ file, line: v.line, content: v.text, msg: v.msg });
   }
 }
