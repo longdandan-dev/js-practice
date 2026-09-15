@@ -314,6 +314,96 @@ function checkErrScope(code, rawLines) {
 }
 
 // 查"用了但没声明过的名字"（变量名拼错就是这么来的）
+// 查声明顺序（2026-09-15 新加：const status 写在下面，上面就用了 → Cannot access before initialization）
+function checkDeclOrder(code, rawLines) {
+  const out = [];
+  let m;
+
+  // 从花括号开始，找到和它配对的那个 }（用来框出一个函数的范围）
+  const braceEnd = (from) => {
+    let depth = 0;
+    for (let i = from; i < code.length; i++) {
+      if (code[i] === "{") depth++;
+      else if (code[i] === "}") {
+        depth--;
+        if (depth === 0) return i;
+      }
+    }
+    return code.length - 1;
+  };
+
+  // 1) 收集所有函数声明和它们的函数体（普通函数 + 箭头函数）
+  const funcs = [];
+  const reFn = /\bfunction\s+([A-Za-z_$][\w$]*)\s*\(([^)]*)\)\s*\{/g;
+  while ((m = reFn.exec(code))) {
+    const i = braceEnd(reFn.lastIndex - 1);
+    funcs.push({
+      name: m[1],
+      params: m[2].split(",").map((p) => p.trim().replace(/=.*/, "").trim()),
+      startLine: code.slice(0, m.index).split("\n").length,
+      bodyStart: reFn.lastIndex,
+      bodyEnd: i,
+      body: code.slice(reFn.lastIndex, i),
+    });
+  }
+
+  // 箭头函数：const f = (a, b) => { ... }
+  const reArrow = /\(([^)]*)\)\s*=>\s*\{/g;
+  while ((m = reArrow.exec(code))) {
+    const open = m.index + m[0].length - 1;
+    const i = braceEnd(open);
+    funcs.push({
+      name: "",
+      params: m[1].split(",").map((p) => p.trim().replace(/=.*/, "").trim()),
+      startLine: code.slice(0, m.index).split("\n").length,
+      bodyStart: open,
+      bodyEnd: i,
+      body: code.slice(open + 1, i),
+    });
+  }
+
+  // 2) 收集 const / let 声明
+  const decls = [];
+  const reDecl = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)/g;
+  while ((m = reDecl.exec(code))) {
+    decls.push({ name: m[1], line: code.slice(0, m.index).split("\n").length, index: m.index });
+  }
+
+  // 3) 找"顶层的调用"（行首没有缩进的那一行，说明它一跑到就会执行）
+  const lines = code.split(/\r?\n/);
+  const topCalls = [];
+  lines.forEach((line, i) => {
+    if (/^\s/.test(line)) return;
+    const mm = line.match(/\b([A-Za-z_$][\w$]*)\s*\(/);
+    if (mm) topCalls.push({ name: mm[1], line: i + 1 });
+  });
+
+  // 4) 函数里用到的名字，比声明还早被执行 → 报出来
+  for (const d of decls) {
+    // 函数自己内部声明的局部变量不算：它们天生就写在函数里面
+    if (funcs.some((f) => d.index >= f.bodyStart && d.index < f.bodyEnd)) continue;
+
+    for (const f of funcs) {
+      if (f.startLine >= d.line) continue;
+      // 这个名字是函数自己的参数 → 不算"外面用到的"
+      if (f.params.includes(d.name)) continue;
+      if (!new RegExp("(?<![\\w$.])" + d.name + "\\b").test(f.body)) continue;
+      const call = topCalls.find((c) => c.name === f.name && c.line < d.line);
+      if (!call) continue;
+      out.push({
+        line: d.line,
+        msg:
+          "`" + d.name + "` 在第 " + d.line + " 行才声明，可第 " + call.line + " 行就调用了 `" + f.name +
+          "()`（它里面用到了 `" + d.name + "`）。const / let 必须写在用的地方上面，把这一行挪到脚本最前面。",
+        text: (rawLines[d.line - 1] || "").trim().slice(0, 70),
+      });
+      break;
+    }
+  }
+  return out;
+}
+
+// 查"用了但没声明过的名字"（变量名拼错就是这么来的）
 function checkUndeclared(code, rawLines) {
   const declared = new Set();
   let m;
@@ -483,6 +573,11 @@ for (const file of files) {
   }
 
   for (const v of checkErrScope(codeRaw, rawLines)) {
+    hits.push({ file, line: v.line, content: v.text, msg: v.msg });
+  }
+
+  // 声明顺序这类结构问题，用"去掉注释和字符串"的版本分析，行号一样，但不会被字符串里的括号带偏
+  for (const v of checkDeclOrder(code, rawLines)) {
     hits.push({ file, line: v.line, content: v.text, msg: v.msg });
   }
 }
