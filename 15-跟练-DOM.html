@@ -68,7 +68,12 @@
        提示：querySelector 找"第一个"；querySelectorAll 找"全部"（结果像数组，有 .length）
        在下面敲：
     */
+const title = document.querySelector("#title");
+console.log(title);
 
+const items = document.querySelectorAll(".item");
+console.log(items);
+console.log(items.length);
 
 
     /* ---- 跟练 2：读和改文字 ----
@@ -76,7 +81,9 @@
        提示：读是 元素.textContent，改是 元素.textContent = "新文字"
        在下面敲：
     */
-
+console.log(title.textContent);
+title.textContent = "我今天要练DOM";
+console.log(title.textContent);
 
 
     /* ---- 跟练 3：改样式 ----
@@ -85,7 +92,9 @@
              （横杠去掉，后面那个字母变大写，这叫驼峰命名）
        在下面敲：
     */
-
+const box = document.querySelector("#box");
+box.style.backgroundColor = "#fff8e1";
+box.style.fontSize = "18px";
 
 
     /* ---- 跟练 4：开关类名（今天最重要的一招）----
@@ -95,6 +104,12 @@
              一步一保存，看清每次页面和控制台的变化
        在下面敲：
     */
+const first = document.querySelectorAll(".item")[0];
+first.classList.add("done");
+
+console.log(first.classList.contains("done"));
+first.classList.remove("done");
+first.classList.toggle("done");
 
 
 
@@ -107,15 +122,18 @@
              document.querySelector("#list").append(li);
        在下面敲：
     */
-
-
+const li = document.createElement("li");
+li.textContent = "第三条（js造出来的）";
+li.classList.add("item");
+const list = document.querySelector("#list");
+list.append(li);
 
     /* ---- 跟练 6：删掉一个元素 ----
        目标：把 #box 从页面上删掉
        提示：找到它，然后调 .remove()
        在下面敲：
     */
-
+box.remove();
 
     /* ===== 敲完之后 =====
        1. 浏览器里页面变成了什么样

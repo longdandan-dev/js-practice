@@ -159,7 +159,38 @@
          先清空 #list，再 forEach 数据，每项 createElement("li") 造出来，最后 append 进去
        在下面敲：
     */
+         const list = document.querySelector("#list")//得先找出元素
+          const countEl = document.querySelector("#count")//得先找出元素
+        function render(){
 
+          list.innerHTML= "";
+
+          todos.forEach((item,i) =>{
+            const li = document.createElement("li");
+            li.dataset.index = i;
+            //文字
+            const text = document.createElement("span");
+            text.classList.add("text");
+            text.textContent = item.text;
+            li.append(text);
+            //删除
+            const delbtn = document.createElement("button");
+            delbtn.classList.add("del")
+            delbtn.textContent = "删除";
+            li.append(delbtn);
+
+            if(item.done){
+              li.classList.add("done")
+            };
+
+            list.append(li);
+          });
+          const left = todos.filter((item) => !item.done).length;
+          countEl.textContent = "还剩" + left +"件";
+        }
+        function save(){
+          localStorage.setItem("todos",JSON.stringify(todos));
+        };
 
 
     /* ---- TODO 题2：添加 ----
@@ -170,9 +201,22 @@
          4. 重新渲染，并把输入框清空
        在下面敲：
     */
+//先找到---放守卫监听---点击之后得事件---
+const form = document.querySelector("#form");//找打表单
+const input = document.querySelector("#input");
+// const list = document.querySelector("#list");//script中已经找过，不必重复写
+  form.addEventListener("submit" ,function(e){
+    e.preventDefault();//阻止刷新
 
+    const text = input.value.trim();//读取输入框
+    if(text ==="") return;//空的掉头
 
-
+    todos.push({text:text,done:false});//改数据
+    save();
+    render();//刷新
+    input.value = "";//清空输入框
+  });
+  
     /* ---- TODO 题3 + 题4：勾选 和 删除 ----
        这两件事都发生在"点列表里的东西"的时候，所以用跟练 11 的事件委托，挂在 #list 上：
          点删除按钮（怎么认出它？看 e.target 有没有 del 这个类）→ 从 todos 里删掉对应那一条
@@ -183,6 +227,22 @@
        在下面敲：
     */
 
+//给整个列表雇个门卫
+list.addEventListener("click",function(e){
+  const li = e.target.closest("li");//被点的元素找编号
+  if(!li) return;
+
+  const index = Number(li.dataset.index);//读编号
+   
+  if(e.target.classList.contains("del")){//判断点击得是不是删除按钮
+    todos.splice(index,1);//是就删,1表示只删一个
+  }else{
+    todos[index].done = !todos[index].done;//不是就取反
+  }
+save();
+render();
+
+});
 
 
     /* ---- TODO 题5：刷新不丢 ----
@@ -194,8 +254,12 @@
        提示：JSON.stringify 存、JSON.parse 读；读出来是 null 就是没存过
        在下面敲：
     */
-
-
+//页面打开查看存过没有
+const raw = localStorage.getItem("todos");
+if(raw){
+  todos = JSON.parse(raw); //存过就拆包
+}
+render(); 
 
     /* ---- TODO 题6（加分）：统计 ----
        底部"还剩 N 件"：N = todos 里 done 为 false 的条数（提示：filter + length）
