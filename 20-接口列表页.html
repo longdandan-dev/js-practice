@@ -1,0 +1,236 @@
+<!-- ============================================================
+     阶段 0 · 模块 3 产出：接口列表页
+     ------------------------------------------------------------
+     这是"作品"，不是练习题。做完它就是能挂进作品集的页面。
+     HTML 和 CSS 我已经给你了，不用改（想美化随你）。
+     你要做的是把下面 <script> 里的 TODO 全部写出来。
+
+     要求（做完逐条对一遍）：
+       题1 打开页面：先显示"加载中…"，然后把仓库列表画出来
+       题2 每条显示三样东西：仓库名、描述、星星数
+             （描述是 null 的时候要显示"还没有写描述"，不能把 null 印出来）
+       题3 请求失败时不白屏：页面显示错误提示
+             （把接口地址里的用户名改成一个不存在的，就能造出失败）
+       题4 搜索框：打字就实时过滤列表（按仓库名，忽略大小写）
+       题5 搜不到时显示"没有匹配的仓库"
+       题6 加分：底部显示"共 N 个仓库"
+
+     数据来源（你前两天用过的那个接口）：
+       https://api.github.com/users/longdandan-dev/repos
+     返回的是"这个用户的仓库列表"：数组里套对象，
+     每个对象里有 name / description / stargazers_count / html_url 这些字段。
+
+     验收方式（做完自己先过一遍，再发我）：
+       1. 打开页面 → 先看到"加载中…"，随后出现仓库列表
+       2. 搜索框输入 js → 只剩名字里带 js 的
+       3. 搜索框输入 vue → 显示"没有匹配的仓库"
+       4. 把搜索框清空 → 列表恢复全部
+       5. 把用户名改成 zhegeyonghumingbukenengcunzai → 显示错误提示，页面不白屏
+       6. F12 控制台没有 JS 报错（那条 GET … 404 不算，是浏览器在报告请求结果）
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>我的 GitHub 仓库</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 40px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 640px;
+      background-color: #ffffff;
+      border: 1px solid #e6e8eb;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 22px;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      margin: 0 0 20px 0;
+      font-size: 13px;
+      color: #888888;
+    }
+
+    #search {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    #search:focus {
+      border-color: #1a73e8;
+    }
+
+    #status {
+      min-height: 22px;
+      margin: 12px 0;
+      font-size: 14px;
+      color: #1a73e8;
+    }
+
+    #status.error {
+      color: #d93025;
+    }
+
+    #list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #list li {
+      border: 1px solid #e6e8eb;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background-color: #fbfcfe;
+    }
+
+    #list li.empty {
+      border: 1px dashed #dcdfe6;
+      background-color: #ffffff;
+      color: #888888;
+      text-align: center;
+    }
+
+    .repo-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1a73e8;
+      text-decoration: none;
+    }
+
+    .repo-desc {
+      margin: 6px 0;
+      font-size: 14px;
+      color: #444444;
+      line-height: 1.6;
+    }
+
+    .repo-meta {
+      font-size: 12px;
+      color: #888888;
+    }
+
+    .count {
+      margin: 16px 0 0 0;
+      font-size: 13px;
+      color: #888888;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>我的 GitHub 仓库</h1>
+    <p class="subtitle">阶段 0 · 模块 3 产出 · 龙丹丹</p>
+
+    <input id="search" type="text" placeholder="搜索仓库名…">
+    <p id="status"></p>
+    <ul id="list"></ul>
+    <p class="count" id="count"></p>
+  </div>
+
+  <script>
+    /* ===== 接口地址（想多看几条数据，可以把用户名换成 "vuejs" 试一次）===== */
+    const USER = "longdandan-dev";
+    const API = "https://api.github.com/users/" + USER + "/repos";
+
+    /* ---- TODO 题1 + 题6：把数据要回来 ----
+       写一个 async 函数 loadRepos()，里面：
+         1. 先抓元素：搜索框、状态行、列表、统计行
+         2. 请求前先把状态行写成"加载中…"
+         3. await fetch(API)，拿到 res
+         4. 判断 res.ok，不 ok 就 throw new Error(...)
+         5. await res.json() 拿到 data（这就是仓库数组）
+         6. 把 data 存进一个变量 repos（搜索过滤要用它）
+         7. 渲染列表（下一题）
+         8. 状态行清空
+       最后在下面调用一次 loadRepos();
+       参考：跟练 4 的 getRepos 就是这套流程。
+       在下面敲：
+    */
+
+
+
+
+
+
+    /* ---- TODO 题2：每条长什么样 ----
+       写一个 render(list) 函数：
+         1. 先清空列表容器（innerHTML = ""）
+         2. list.forEach 每一条造一个 <li>，里面放三块：
+              仓库名：<a class="repo-name">，文字是 item.name，href 用 item.html_url
+              描述：  <p class="repo-desc">，文字是 item.description；
+                      描述是 null 的时候，显示"还没有写描述"（提示：|| 兜底）
+              星星：  <p class="repo-meta">，文字写成 "⭐ 0 · JavaScript" 这种
+                      （星星用 item.stargazers_count，语言用 item.language，
+                        语言是 null 的时候写"其它"）
+         3. 造好的 li 用 append 放进列表容器
+       参考：跟练 5 的 render 和你待办清单那次，配方一样。
+       在下面敲：
+    */
+
+
+
+
+
+
+    /* ---- TODO 题3：失败不白屏 ----
+       在 loadRepos 里加 try / catch：
+         catch 里做两件事：状态行写上错误原因，并且给它加上 class="error"（变红）
+         （成功的时候要把 error 这个类去掉，不然下一次成功还是红的）
+       参考：跟练 4 的 catch + 跟练 6 的状态行写法。
+    */
+
+
+
+
+
+
+    /* ---- TODO 题4 + 题5：搜索过滤 ----
+       给搜索框挂 input 事件，每次打字都做一次过滤：
+         1. 取输入框的值，trim() 去空格，再 toLowerCase() 变小写
+         2. 用 repos.filter(...) 过滤出"仓库名里包含这个关键字"的
+            （仓库名也要 toLowerCase 才有意义）
+         3. 关键字是空的时候，就显示全部
+         4. 过滤结果为空 → 显示"没有匹配的仓库"（可以直接造一个 li，
+            给它加上 class="empty"，或者写到状态行里）
+         5. 用过滤后的结果重新 render 一遍
+       参考：模块 1 的 filter + 模块 2 的 render 老配方。
+       在下面敲：
+    */
+
+
+
+
+
+
+    /* ===== 写完之后 =====
+       1. 浏览器里把上面"验收方式"的 6 步走一遍
+       2. 终端里跑：node 检查异步.js（会多出一组"产出"检查）
+       3. 把两部分结果都发我
+    */
+  </script>
+</body>
+</html>

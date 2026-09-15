@@ -106,7 +106,7 @@ if (product === null) {
     ["页面里有输入框（搜索框）", /<input/i.test(product)],
     ["有一个列表容器（ul / ol / div）", /<ul|<ol|id="list"/i.test(product)],
     ["用了 fetch 去要数据", /fetch\s*\(/.test(code)],
-    ["请求的是一个 http 地址", /fetch\s*\(\s*["'`]https?:\/\//.test(code)],
+    ["接口地址是真实的 http 地址（写在常量里也算）", /https?:\/\/[^\s"'`]+/.test(product) && /fetch\s*\(/.test(code)],
     ["用了 async / await", /async\s+function|async\s*\(/.test(code) && /await\s/.test(code)],
     ["用了 try / catch 处理失败", /\btry\b/.test(code) && /\bcatch\b/.test(code)],
     ["先检查响应是否成功（response.ok 或状态码）", /\.ok\b|status\s*===?\s*200|status\s*>=?\s*400/.test(code)],
@@ -114,6 +114,7 @@ if (product === null) {
     ["有出错时的提示文字", /失败|出错|错误|没找到|异常|重试/.test(product)],
     ["搜索用了 filter + toLowerCase", /\.filter\s*\(/.test(code) && /toLowerCase/.test(code)],
     ["搜索前把输入去空格（trim）", /\.trim\s*\(/.test(code)],
+    ["搜不到的时候有提示文字", /没有匹配|没有找到|没有搜到|无结果/.test(product)],
     ["重新渲染前清空列表（innerHTML 或 replaceChildren）", /innerHTML\s*=\s*["'`]{2}|replaceChildren/.test(code)],
   ];
 
