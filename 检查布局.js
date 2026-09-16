@@ -51,10 +51,46 @@ const TYPOS = [
   ["padigng", "padding"],
   ["paddding", "padding"],
   ["background-colo:", "background-color:"],
+  ["text-emphasis", "text-decoration（想给链接去掉下划线，用的是 text-decoration: none）"],
+  ["text-deocration", "text-decoration"],
+  ["box-shodow", "box-shadow"],
+  ["transiton", "transition"],
+  ["transtion", "transition"],
 ];
 
 // 这些属性后面必须带单位（0 除外）
 const NEED_UNIT = ["gap", "row-gap", "column-gap", "padding", "margin", "width", "height", "min-height", "max-width", "font-size", "border-radius"];
+
+// 认识的单位（写错了会当场报出来，比如 1ppx）
+const KNOWN_UNITS = ["px", "rem", "em", "%", "vh", "vw", "vmin", "vmax", "ch", "ex", "cm", "mm", "in", "pt", "pc", "fr", "deg", "turn", "s", "ms", "dpi", "dppx"];
+
+// 把 @media 整段从 CSS 里摘掉：剩下的就是"宽屏默认样式"。
+// 招式检查只在默认样式里查，免得窄屏规则把宽屏的问题掩盖过去。
+function stripMedia(css) {
+  let out = "";
+  let i = 0;
+  while (i < css.length) {
+    const idx = css.indexOf("@media", i);
+    if (idx === -1) {
+      out += css.slice(i);
+      break;
+    }
+    out += css.slice(i, idx);
+    const open = css.indexOf("{", idx);
+    if (open === -1) break;
+    let depth = 0;
+    let k = open;
+    for (; k < css.length; k++) {
+      if (css[k] === "{") depth += 1;
+      else if (css[k] === "}") {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+    i = k + 1;
+  }
+  return out;
+}
 
 function checkFile(file) {
   const raw = fs.readFileSync(file, "utf8");
@@ -81,24 +117,35 @@ function checkFile(file) {
 
   const has = (re) => re.test(css);
 
-  const twoColumn = [...css.matchAll(/grid-template-columns\s*:\s*([^;}]+)/gi)].some(
-    (m) => /fr/i.test(m[1]) && /(px|rem|em|%)/i.test(m[1])
-  );
+  // ==== 选择器级检查：招式是不是写在"该写的那个容器"上 ====
+  // 以前只查"整份文件里出现过 display: grid 没有"，结果 .layout 上的 grid
+  // 会把 .card-wall 缺 grid 这件事掩盖过去。现在按选择器分开查。
+  const desktopCss = stripMedia(css);
+  const desktopRules = [...desktopCss.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+
+  // 取出某个选择器名下所有声明（同名选择器写了多块会合并）
+  const bodyOf = (selector) =>
+    desktopRules
+      .filter((r) => r[1].split(",").map((s) => s.trim()).includes(selector))
+      .map((r) => r[2])
+      .join(";");
+
+  const on = (selector, re) => re.test(bodyOf(selector));
 
   const checks = [
-    ["第 1 题 · 导航栏用了 Flex（display: flex）", has(/(^|[^-a-z])display\s*:\s*(inline-)?flex\b/i), "给 .nav 那一条写 display: flex;（flex 写在父容器身上）"],
-    ["第 1 题 · 导航栏两端分开（justify-content: space-between）", has(/justify-content\s*:\s*space-between/i), "justify-content: space-between 就是“两头贴边”"],
-    ["第 1 题 · 导航栏竖直居中（align-items: center）", has(/align-items\s*:\s*center/i), "align-items: center;"],
-    ["第 2 题 · 卡片墙用了 Grid（display: grid）", has(/(^|[^-a-z])display\s*:\s*(inline-)?grid\b/i), "给 .card-wall 写 display: grid;"],
-    ["第 2 题 · 卡片墙分了列（grid-template-columns）", has(/grid-template-columns\s*:/i), "grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));"],
-    ["第 2 题 · 会自动换行（repeat + auto-fit）", has(/repeat\s*\(\s*auto-fit/i), "repeat(auto-fit, ...) 让浏览器自己决定一行放几张"],
-    ["第 2 题 · 每列有最小宽度（minmax）", has(/minmax\s*\(\s*\d/i), "minmax(220px, 1fr) 里 220px 是“最窄这么宽”"],
-    ["第 3 题 · 两栏布局（一栏固定 + 一栏自适应）", twoColumn, "grid-template-columns: 240px 1fr;（同时出现 px 和 fr）"],
-    ["第 4 题 · 卡片内部竖排（flex-direction: column）", has(/flex-direction\s*:\s*column/i), "卡片里从上往下排，就写 flex-direction: column;"],
-    ["第 4 题 · 把多余空间让给描述（flex: 1）", has(/(^|[^-a-z])flex\s*:\s*[1-9]/i), "给 .card p 写 flex: 1，底部那行才会贴到最下面"],
+    ["第 1 题 · 导航栏用了 Flex（.nav 上写了 display: flex）", on(".nav", /display\s*:\s*(inline-)?flex\b/i), "display: flex 要写在 .nav 这条规则里（父容器），写在子元素身上没用"],
+    ["第 1 题 · 导航栏两端分开（.nav 上写了 space-between）", on(".nav", /justify-content\s*:\s*space-between/i), "justify-content: space-between 就是“两头贴边”"],
+    ["第 1 题 · 导航栏竖直居中（.nav 上写了 align-items: center）", on(".nav", /align-items\s*:\s*center/i), "align-items: center;"],
+    ["第 2 题 · 卡片墙用了 Grid（.card-wall 上写了 display: grid）", on(".card-wall", /display\s*:\s*(inline-)?grid\b/i), "display: grid 要写在 .card-wall 这条规则里——写错元素的话，卡片只会一直竖着堆"],
+    ["第 2 题 · 卡片墙分了列（.card-wall 上写了 grid-template-columns）", on(".card-wall", /grid-template-columns\s*:/i), "grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));"],
+    ["第 2 题 · 会自动换行（.card-wall 里写了 repeat(auto-fit…)）", on(".card-wall", /repeat\s*\(\s*auto-fit/i), "repeat(auto-fit, ...) 让浏览器自己决定一行放几张"],
+    ["第 2 题 · 每列有最小宽度（.card-wall 里写了 minmax…）", on(".card-wall", /minmax\s*\(\s*\d/i), "minmax(240px, 1fr) 里 240px 是“最窄这么宽”"],
+    ["第 3 题 · 两栏布局（.layout 上写了 display: grid + 固定栏 + 自适应栏）", on(".layout", /display\s*:\s*(inline-)?grid\b/i) && /grid-template-columns\s*:\s*[^;}]*\d+(px|rem)[^;}]*fr/i.test(bodyOf(".layout")), "grid-template-columns: 240px 1fr;（同一句里既要有 px 也要有 fr）"],
+    ["第 4 题 · 卡片内部竖排（.card 上写了 flex-direction: column）", on(".card", /flex-direction\s*:\s*column/i), "卡片里从上往下排，就写 flex-direction: column;"],
+    ["第 4 题 · 把多余空间让给描述（.card p 上写了 flex: 1）", on(".card p", /(^|[^-a-z])flex\s*:\s*[1-9]/i), "给 .card p 写 flex: 1，底部那行才会贴到最下面"],
     ["第 5 题 · 有媒体查询（@media）", has(/@media[^{]*\(/i), "@media (max-width: 768px) { ... }"],
-    ["第 5 题 · 窄屏允许换行（flex-wrap: wrap）", has(/flex-wrap\s*:\s*wrap/i), "窄屏时导航挤不下，就给它 flex-wrap: wrap;"],
-    ["第 6 题 · 居中三件套（justify-content + align-items 都用上）", has(/justify-content\s*:\s*center/i) && has(/align-items\s*:\s*center/i), "display: flex + justify-content: center + align-items: center"],
+    ["第 5 题 · 窄屏允许换行（.nav 上有 flex-wrap: wrap）", on(".nav", /flex-wrap\s*:\s*wrap/i), "窄屏时导航挤不下，就给它 flex-wrap: wrap;"],
+    ["第 6 题 · 居中三件套（.hero 上写了 justify-content + align-items）", on(".hero", /justify-content\s*:\s*center/i) && on(".hero", /align-items\s*:\s*center/i), "display: flex + justify-content: center + align-items: center"],
     ["有间距（gap）", has(/(^|[^-a-z])gap\s*:\s*\d/i), "gap: 16px; 比一个个 margin 靠谱"],
   ];
 
@@ -195,6 +242,46 @@ function checkFile(file) {
     problems.push(
       "边框不会显示：`" + m[0].trim() + "` 少了边框样式关键字，补上 solid（实线）或 dashed（虚线），例如 border: 1px solid #dddddd;"
     );
+  }
+
+  // 单位写法可疑：1ppx 这种，浏览器不认，整条样式作废
+  // 前面必须紧跟着 空白 / : ( , ; —— 这样才不会把 #2563eb 这种十六进制颜色认成单位
+  for (const m of css.matchAll(/(^|[\s:(,;])(\d+(?:\.\d+)?)([a-z]{2,4})(?![a-z0-9])/gi)) {
+    const unit = m[3].toLowerCase();
+    if (KNOWN_UNITS.includes(unit)) continue;
+    problems.push(
+      "单位写法可疑：`" + m[2] + m[3] + "` —— 浏览器不认识 “" + unit + "”，常见的长度单位是 px / rem / em / % / vh / vw / fr"
+    );
+  }
+
+  // 渐变色不能写在 background-color 上
+  for (const m of css.matchAll(/background-color\s*:\s*([^;}]*gradient[^;}]*)/gi)) {
+    problems.push(
+      "渐变没生效：`background-color` 后面不能写 linear-gradient，它只认单色。改成 background: " + m[1].trim() + ";"
+    );
+  }
+
+  // CSS 变量：用了但没定义 → 整条样式失效
+  const definedVars = new Set([...css.matchAll(/(--[A-Za-z0-9_-]+)\s*:/g)].map((m) => m[1]));
+  const usedVars = [...new Set([...css.matchAll(/var\(\s*(--[A-Za-z0-9_-]+)/g)].map((m) => m[1]))];
+  for (const v of usedVars) {
+    if (!definedVars.has(v)) {
+      problems.push("变量 " + v + " 用了但没定义（拼错的可能性最大）——浏览器不认识它，这一整条样式都会失效");
+    }
+  }
+
+  // 同一个选择器写了两块：不是错，但很容易互相覆盖，建议合并成一块
+  // 只数"单独成块"的选择器：.nav, .hero { ... } 这种共用一块是正常写法，不算重复
+  const selCount = {};
+  for (const r of desktopRules) {
+    const sels = r[1].split(",").map((x) => x.trim()).filter(Boolean);
+    if (sels.length !== 1) continue;
+    selCount[sels[0]] = (selCount[sels[0]] || 0) + 1;
+  }
+  for (const s of Object.keys(selCount)) {
+    if (selCount[s] > 1) {
+      problems.push("提示：" + s + " 写了 " + selCount[s] + " 块（分散在文件不同位置）——同一套样式建议合并成一块，不然以后改一处、留一处，很容易自己跟自己打架");
+    }
   }
 
   // 中文标点：这是最容易让人懵的一种错——整条样式直接失效
