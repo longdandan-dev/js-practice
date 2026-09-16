@@ -152,17 +152,24 @@ function checkFile(file) {
   // 值里面出现了像是另一个属性名：八成是上一行末尾少写了分号
   const PROP_WORDS =
     "display|align-items|justify-content|flex-direction|flex-wrap|flex|grid-template-columns|grid-template-rows|min-height|max-height|min-width|max-width|font-size|font-weight|padding|margin|width|height|gap|border-radius|background-color|text-align|line-height|position|transition|box-shadow";
+  // 这些属性后面本来就允许跟属性名（比如 transition: background-color 0.2s），跳过
+  const VALUE_MAY_HOLD_PROP = ["transition", "will-change", "animation", "grid-template-areas", "font", "background", "content"];
   for (const r of rules) {
     for (const part of r[2].split(";")) {
       const t = part.trim();
       if (!t.includes(":")) continue;
+      const prop = t.split(":")[0].trim().toLowerCase();
+      if (VALUE_MAY_HOLD_PROP.includes(prop)) continue;
       const value = t.slice(t.indexOf(":") + 1);
-      const m = value.match(new RegExp("(^|\\s)(" + PROP_WORDS + ")\\s", "i"));
+      // 注意两点：
+      //   ① 前面必须有一个空格（值开头的属性名是合法写法，比如 transition: box-shadow 0.2s）
+      //   ② 后面要么跟冒号（上一行没写分号，两行粘成一行），要么跟一个数字（属性名后漏了冒号）
+      const m = value.match(new RegExp("\\s(" + PROP_WORDS + ")\\s*(?::|\\d)", "i"));
       if (m) {
         const sel = (r[1] || "").trim().replace(/\s+/g, " ").slice(0, 30);
         const oneLine = t.replace(/\s+/g, " ");
         problems.push(
-          "“" + sel + "” 里这一句看着不对：`" + oneLine + "` —— 值里面出现了 “" + m[2] + "”，大概率是上一行末尾少写了分号"
+          "“" + sel + "” 里这一句看着不对：`" + oneLine + "` —— 值里面出现了 “" + m[1] + "”，大概率是上一行末尾少写了分号"
         );
       }
     }
