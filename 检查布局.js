@@ -129,6 +129,67 @@ function checkFile(file) {
     if (css.includes(wrong)) problems.push("拼写：发现了“" + wrong + "”，应该写 “" + right + "”");
   }
 
+  // 同一个规则里同名属性写了两遍：后面的赢，前面那句等于没写
+  for (const r of rules) {
+    const seen = {};
+    for (const part of r[2].split(";")) {
+      const t = part.trim();
+      if (!t.includes(":")) continue;
+      const prop = t.split(":")[0].trim().toLowerCase();
+      if (!prop) continue;
+      seen[prop] = (seen[prop] || 0) + 1;
+    }
+    for (const prop of Object.keys(seen)) {
+      if (seen[prop] > 1) {
+        const sel = (r[1] || "").trim().replace(/\s+/g, " ").slice(0, 30);
+        problems.push(
+          "“" + sel + "” 里 “" + prop + "” 写了两遍（共 " + seen[prop] + " 次）——同一条规则里同名属性后面的赢，前面那句白写，想对比不同值请一次只留一个"
+        );
+      }
+    }
+  }
+
+  // 值里面出现了像是另一个属性名：八成是上一行末尾少写了分号
+  const PROP_WORDS =
+    "display|align-items|justify-content|flex-direction|flex-wrap|flex|grid-template-columns|grid-template-rows|min-height|max-height|min-width|max-width|font-size|font-weight|padding|margin|width|height|gap|border-radius|background-color|text-align|line-height|position|transition|box-shadow";
+  for (const r of rules) {
+    for (const part of r[2].split(";")) {
+      const t = part.trim();
+      if (!t.includes(":")) continue;
+      const value = t.slice(t.indexOf(":") + 1);
+      const m = value.match(new RegExp("(^|\\s)(" + PROP_WORDS + ")\\s", "i"));
+      if (m) {
+        const sel = (r[1] || "").trim().replace(/\s+/g, " ").slice(0, 30);
+        const oneLine = t.replace(/\s+/g, " ");
+        problems.push(
+          "“" + sel + "” 里这一句看着不对：`" + oneLine + "` —— 值里面出现了 “" + m[2] + "”，大概率是上一行末尾少写了分号"
+        );
+      }
+    }
+  }
+
+  // 列宽单位写错（1fr 写成 ifr 这类）
+  for (const m of css.matchAll(/grid-template-columns\s*:\s*([^;}]+)/gi)) {
+    for (const tk of m[1].split(/[\s,]+/).filter(Boolean)) {
+      if (/fr$/i.test(tk) && !/^\d+(\.\d+)?fr$/i.test(tk)) {
+        problems.push(
+          "列宽写错了：`" + tk + "` 不是合法的列宽（想写 1fr 吗？）。CSS 遇到不认识的值不会报错，只会把这一条当没写"
+        );
+      }
+    }
+  }
+
+  // 边框简写少了 solid/dashed 时，浏览器根本不画线
+  for (const m of css.matchAll(/(?:^|[^-a-z])border(-(?:top|right|bottom|left))?\s*:\s*([^;}]+)/gi)) {
+    const val = m[2].trim();
+    if (!/\d/.test(val)) continue;
+    if (/^\s*0(px)?\s*$/.test(val)) continue;
+    if (/(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)/i.test(val)) continue;
+    problems.push(
+      "边框不会显示：`" + m[0].trim() + "` 少了边框样式关键字，补上 solid（实线）或 dashed（虚线），例如 border: 1px solid #dddddd;"
+    );
+  }
+
   // 中文标点：这是最容易让人懵的一种错——整条样式直接失效
   const cnPunct = css.match(/[：；，（）]/g);
   if (cnPunct) {
