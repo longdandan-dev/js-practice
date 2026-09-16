@@ -71,6 +71,10 @@
        观察：六个格子变成两行三列
     */
     .grid-demo {
+      display: grid;
+      /* grid-template-columns: 1fr 1fr 1fr; */
+      grid-template-columns: repeat(3,1fr);
+      gap: 12px;
       border: 1px dashed #bbbbbb;
       padding: 12px;
     }
@@ -102,6 +106,9 @@
        这是"响应式卡片墙"的标准配方，记下来能用一辈子
     */
     .card-wall {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+      gap:16px;
       margin-top: 20px;
     }
 
@@ -111,7 +118,9 @@
        效果：它横着占两个格子，剩下的卡片自动往后让位
        换成 span 3 或者 1 / 3 也可以自己试试
     */
-
+.card-wide{
+  grid-column: span 2;
+}
 
     /* ---- 跟练 6：两栏布局（加给 .layout）----
        目标：
@@ -122,10 +131,17 @@
        这块 HTML 里侧栏写在前面、主内容写在后面，顺序要对上
     */
     .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 16px;
       margin-top: 20px;
     }
 
-
+@media (max-width:768px){
+  .layout{
+    grid-template-columns:768px;
+  }
+}
     /* ---- 跟练 7：媒体查询（写在文件最下面）----
        目标：
          @media (max-width: 768px) {

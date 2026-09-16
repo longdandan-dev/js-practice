@@ -49,6 +49,7 @@
       background-color: #dbeafe;
       border: 1px solid #93c5fd;
       padding: 16px;
+      height: 60px;
     }
 
 
@@ -56,7 +57,18 @@
        目标：给 .row-demo 加 display: flex;
        观察：三个盒子从上下堆叠变成左右并排
     */
+    .row-demo{
+      display: flex;
 
+      /* justify-content: flex-start;
+      justify-content: center; */
+      justify-content: space-between ;
+
+      align-items: center;
+      gap: 16px;
+      /* flex-direction: column;
+      flex-wrap: wrap; */
+    }
 
     /* ---- 跟练 2：justify-content（主轴对齐，还是加给 .row-demo）----
        依次试这三个值，每改一次都保存看一眼：
@@ -93,7 +105,9 @@
        再试试：给第 2 个盒子单独一个类（比如 .grow），只让它 flex: 1;
                → 它会把剩下的空间全吃掉，这就是"菜单自动靠右"的原理
     */
-
+.grow{
+  flex:1;
+}
 
     /* ---- 跟练 7-A：导航栏 ----
        目标：.nav 用 flex + space-between + center，
@@ -101,6 +115,10 @@
        提示：.menu 里那三个 span 也要排成一行——给 .menu 也上 display: flex + gap
     */
     .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
       background-color: #ffffff;
       border: 1px solid #dddddd;
       border-radius: 8px;
@@ -112,7 +130,10 @@
       color: #1a73e8;
     }
 
-
+.menu{
+  display: flex;
+  gap: 16px;
+}
     /* ---- 跟练 7-B：居中三件套（加给 .center-demo）----
        目标：把里面那个小方块放到整块区域的正中间，三句话：
          display: flex;
@@ -121,6 +142,9 @@
        这是背下来不亏的一招，面试也常问"怎么居中"
     */
     .center-demo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       background-color: #ffffff;
       border: 1px dashed #bbbbbb;
       height: 160px;
@@ -142,7 +166,7 @@
   <h2>跟练 1-6：三个盒子</h2>
   <div class="row-demo">
     <div class="box">盒子 1</div>
-    <div class="box">盒子 2</div>
+    <div class="box grow">盒子 2</div>
     <div class="box">盒子 3</div>
   </div>
 
