@@ -170,9 +170,31 @@
        参考：跟练 4 的 getRepos 就是这套流程。
        在下面敲：
     */
+const search = document.querySelector("#search");
+const status = document.querySelector("#status");
+const list = document.querySelector("#list");
+const count = document.querySelector("#count");
+ let repos = [];
 
-
-
+async function loadRepos(){
+  try{
+    status.textContent= "加载中..."; 
+   const res =  await fetch(API)
+      if(!res.ok) {
+        throw new Error("接口返回" + res.status);
+      }
+      const data = await res.json();//需要解析第二遍
+      repos = data;
+      render(repos);
+      status.classList.remove("error");
+      status.textContent ="";
+    }catch (err){
+      status.textContent = "出错了：" + err.message;
+      status.classList.add("error");
+      console.log("失败",err.message);
+    }
+}
+loadRepos();
 
 
 
@@ -190,9 +212,32 @@
        参考：跟练 5 的 render 和你待办清单那次，配方一样。
        在下面敲：
     */
+function render(repos){
+  list.innerHTML = "";
+  repos.forEach((repo)=>{
+    const li = document.createElement("li");
 
+    const reponame = document.createElement("a");
+    reponame.classList.add("repo-name");
+    reponame.textContent= repo.name;
+    reponame.href = repo.html_url; 
+    li.append(reponame);
 
+    const repodesc = document.createElement("p");
+    repodesc.classList.add("repo-desc");
+    repodesc.textContent= repo.description || "还没有写描述";
+    li.append(repodesc);
 
+    const repometa = document.createElement("p");
+    repometa.classList.add("repo-meta");
+    repometa.textContent="⭐"  + repo.stargazers_count + "." +(repo.language || "其他"); 
+    li.append(repometa);
+    
+    list.append(li);
+  })
+
+  count.textContent = "共" + repos.length + "个仓库";
+}
 
 
 
@@ -220,7 +265,26 @@
        参考：模块 1 的 filter + 模块 2 的 render 老配方。
        在下面敲：
     */
+const  input= document.querySelector("#search");
+input.addEventListener("input",function(){
+  const keyword = input.value.trim().toLowerCase();
+  if(keyword === ""){
+    render(repos);
+    return;
+  }
 
+  const result = repos.filter((repo) => repo.name.toLowerCase().includes(keyword));
+  
+  if(result.length === 0){
+    const li = document.createElement("li");
+    li.classList.add("empty");
+    li.textContent= "没有匹配得仓库";
+    list.innerHTML = "";
+    list.append(li);
+    return;
+  }
+  render(result);
+})
 
 
 

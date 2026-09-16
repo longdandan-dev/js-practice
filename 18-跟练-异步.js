@@ -1,4 +1,4 @@
-/* ============================================================
+  /* ============================================================
    阶段 0 · 模块 3 跟练本 A（异步三件套：Promise / async / await）
    ------------------------------------------------------------
    老规矩：跟着聊天里我给的代码，一段一段自己敲进下面的空位。
@@ -28,14 +28,15 @@
       console.log("===== 跟练 2 开始 =====")，或者把别的段先用 // 注掉。
    ============================================================ */
 
-
 // ============================================================
 // 跟练 1：同步 —— 代码从上往下排队
 // ------------------------------------------------------------
 // 聊天里给你的三条 console.log，敲在下面。
 // 先猜：跑出来会不会乱序？猜完再跑。
 // ============================================================
-
+console.log("1 起床");
+console.log("2 刷牙");
+console.log("3 吃饭");
 
 
 
@@ -47,7 +48,11 @@
 // 重点看：打印顺序是不是你以为的那样。
 // ============================================================
 
-
+console.log("1,点外卖");
+setTimeout(() => {
+   console.log("3,外卖到了");
+}, 2000);
+console.log("2继续学js");
 
 
 
@@ -57,7 +62,15 @@
 // 把聊天里那个"三层嵌套 setTimeout"敲在下面。
 // 敲的时候数一下：到第三层，代码已经往右缩了几格？
 // ============================================================
-
+setTimeout(() => {
+   console.log("第一步，下单");
+   setTimeout(() => {
+      console.log("第二步，商家接单");
+      setTimeout(() => {
+         console.log("第三步，骑手送餐")
+      }, 1000);
+   }, 1000);
+}, 1000);
 
 
 
@@ -70,9 +83,15 @@
 // 然后跟着写 .then() 和那句"不等你，我先往下走"。
 // 重点看：哪句话先打印。
 // ============================================================
+const wait = (ms)=> new Promise((resolve)=>{
+   setTimeout(resolve, ms);
+})
 
-
-
+console.log("开始等1秒...");
+wait(1000).then(()=>{
+   console.log("1 秒到了")
+});
+console.log("不等你，我先往下走");
 
 
 
@@ -82,8 +101,14 @@
 // step 函数 + 三段 .then()（① 下单 ② 商家接单 ③ 骑手取餐）敲在下面。
 // 敲完回头对比跟练 3：同样是三步，谁更好读？
 // ============================================================
+const step = (text,ms) =>new Promise((resolve) =>{
+   setTimeout(() => resolve(text),ms);
+})
 
-
+step("1 下单",500)
+   .then((r)=>{console.log(r);return step("2 商家接单",500);})
+   .then((r)=>{console.log(r);return step("3 骑手取餐",500);})
+   .then((r)=>{console.log(r);console.log("2 流程结束");});  
 
 
 
@@ -94,8 +119,16 @@
 // 聊天里的 runOrder 函数敲在下面，末尾别忘了调用它：runOrder();
 // 重点：输出和跟练 5 一模一样。同一件事，两种写法。
 // ============================================================
-
-
+async function runOrder(){
+   const a = await step("1 下单",500);
+   console.log("awit版：",a);
+   const b = await step("2 商家接单",500);
+   console.log("awit版：",b);
+   const c = await step("3 骑手取餐",500);
+   console.log("awit版：",c);
+   console.log("awit版：流程结束");
+}
+runOrder();
 
 
 
@@ -107,8 +140,16 @@
 // 重点看 wrong 里打印出来的东西：不是数据，而是 Promise { <pending> }。
 // 记住：await 不是可选项，忘了它，你拿到的是"饭票"不是"饭"。
 // ============================================================
-
-
+async function wrong(){
+   const r = step("我是数据",500);
+   console.log("忘了 await 拿到得是：",r);
+}
+wrong();
+async function right(){
+   const r = await step("我是数据",500);
+   console.log("加了 await 拿到得是：",r);
+}
+right();
 
 
 
@@ -120,8 +161,26 @@
 // 末尾调用两次：getData(true); getData(false);
 // 重点：一个走成功分支，一个走失败分支，但程序都不会崩。
 // ============================================================
+const risk = (ok)=> new Promise((resolve, reject) =>{
+   setTimeout(()=>{
+      if(ok){
+         resolve("数据到手");
+      }else {
+         reject("服务器说：找不到这个用户（404）");
+      }
+   },500)
+});
 
-
+async function getData(ok){
+   try{
+      const data = await risk(ok);
+      console.log("成功:",data);
+   }catch(err){
+      console.log("失败：",err);
+   }
+}
+getData(true);
+getData(false);
 
 
 
@@ -132,8 +191,13 @@
 // 聊天里的 parallel 函数敲在下面（会用到跟练 5 的 step 函数）。
 // 重点看 console.time 打出来的毫秒数：三件事同时等，总时长还是 0.5 秒。
 // ============================================================
-
-
+async function parallel(){
+   console.time("并行");
+   const all = await Promise.all([step("A",500),step("B",500),step("C",500)]);
+   console.timeEnd("并行");
+   console.log("一起等到",all);
+}
+parallel();
 
 
 
@@ -144,3 +208,11 @@
       ① 跟练 2 里"外卖到了"为什么排在最后？
       ② 跟练 7 里忘了 await，拿到的到底是什么？
 */
+async function test(){
+   const p = step("我是数据",500);
+   console.log("1) 不await :",p);
+   const data = await step("我是数据",500);
+   console.log("2) await 之后 :",data );
+   console.log("3) 再问一次这张票 :",await p );
+}
+test();

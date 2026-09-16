@@ -65,6 +65,8 @@
   <ul id="list"></ul>
 
   <script>
+    const list = document.querySelector("#list");
+const status = document.querySelector("#status");
     /* ============================================================
        跟练 1：最小的一次请求（then 版）
        ------------------------------------------------------------
@@ -73,7 +75,9 @@
        先感受一下：fetch 后面跟的是 .then，不是直接给你数据——
        因为 fetch 返回的就是一张"饭票"（Promise）。
        ============================================================ */
-
+    fetch("https://api.github.com/users/longdandan-dev/repos")
+      .then((res) => res.json())
+      .then((data)=> console.log("拿到几条：",data.length));
 
 
 
@@ -86,8 +90,15 @@
        第二个 await：等响应体（JSON 文字）解析成 JS 数据（data）
        少一个 await，你拿到的又是一张饭票。
        ============================================================ */
+async function showMyRepos(){
+  const res = await fetch("https://api.github.com/users/longdandan-dev/repos");
+  console.log("状态码",res.status);
+  const data = await res.json();
+  console.log("数据长这样",data[0]);
 
-
+  console.log(data[0].name,data[0].html_url,data[0].description);
+}
+showMyRepos();
 
 
 
@@ -116,8 +127,29 @@
        重点看：加了 if (!res.ok) 之后，404 才会走到 catch。
        不加这一句，404 会被当成"请求成功"，你会在后面莫名其妙地报错。
        ============================================================ */
+async function getRepos(user){
+  try {
+    status.textContent = "加载中...";
+    const res = await fetch("https://api.github.com/users/" + user +"/repos");
 
+    if(!res.ok){
+      throw new Error("接口返回" + res.status);
+    }
 
+    const data = await res.json();
+    console.log("成功，拿到",data.length,"条");
+    render(data);
+    status.textContent = "";
+
+  }
+  catch(err){
+    console.log("失败",err.message);
+    status.textContent = "出错了，原因：" + err.message;
+  }
+}
+
+getRepos("longdandan-dev");
+getRepos("zhegeyonghubucunzai");
 
 
 
@@ -130,6 +162,15 @@
        跑完页面上应该出现一条 li，写着 js-practice。
        ============================================================ */
 
+function render(repos){
+  list.innerHTML="";
+  repos.forEach((repo)=>{
+ const li = document.createElement("li");
+ li.textContent = repo.name + "("+ repo.language + ")";
+ list.append(li)
+  });
+ 
+}
 
 
 
@@ -145,6 +186,9 @@
        为什么值得做：网络要几百毫秒，页面这段时间是空的，
        用户会以为页面坏了——这就是"loading"存在的唯一理由。
        ============================================================ */
+
+
+
 
 
 
