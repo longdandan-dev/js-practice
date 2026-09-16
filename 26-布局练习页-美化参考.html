@@ -1,0 +1,346 @@
+<!-- ============================================================
+     阶段 0 · 模块 4 参考版：美化后的布局练习页
+     ------------------------------------------------------------
+     这个文件是"对照答案"，作用只有一个：
+     让你看见同一份 HTML，只换 CSS 能差多少。
+
+     建议用法：不要整份复制。打开它、再打开你自己那份，两边对着看，
+     然后按聊天里给的"五组"一条一条改自己那份。改的时候你会明白
+     每一组在解决什么问题——那才是能带走的东西。
+
+     它比 25 多用的新东西只有三个（都不难）：
+       1. CSS 变量（--primary 这种）：把颜色起个名字，想换色只改一处
+       2. box-sizing: border-box：让 padding 不再把盒子撑大
+       3. max-width + margin: auto：内容别贴到屏幕两边去
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>布局练习页（美化参考）</title>
+
+  <style>
+    /* ---- 第 0 组：配色表 ----
+       丑的页面通常不是"颜色少"，而是"颜色多而且都是随手挑的"。
+       这套只用 1 个主色 + 4 个灰。 */
+    :root {
+      --primary: #2563eb;        /* 主色：所有强调、链接、按钮都用它 */
+      --primary-soft: #eff6ff;   /* 主色的浅底：标签、侧栏 */
+      --text: #0f172a;           /* 主文字：近黑，不是纯黑 */
+      --muted: #64748b;          /* 次要文字：说明、描述 */
+      --border: #e2e8f0;         /* 边框、分割线 */
+      --bg: #f8fafc;             /* 页面底色：比纯白柔和 */
+      --white: #ffffff;
+    }
+
+    /* box-sizing 一句话解释：
+       默认情况下给盒子写 width: 240px + padding: 20px，它的实际宽度是 280px，
+       两边加起来就超出去了。加了 border-box，写多少就是多少，padding 算在里面。 */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px 48px;
+      font-family: system-ui, -apple-system, "Microsoft YaHei", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ---- 第 1 组：容器宽度 ----
+       没有这一段，内容在宽屏上会横跨整个屏幕，左右贴边、一行太长，很难读。
+       1080px 是"桌面阅读舒服"的常见宽度。 */
+    .nav,
+    .hero,
+    .card-wall,
+    .layout {
+      max-width: 1080px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ---- 第 2 组：配色和边框 ----
+       注意：颜色全靠上面那张表，这里没有一个"随手挑"的颜色。 */
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      background-color: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 24px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+    }
+
+    .menu {
+      display: flex;
+      gap: 28px;
+    }
+
+    .menu a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .menu a:hover {
+      color: var(--primary);
+    }
+
+    /* ---- 第 3 组：hero（首屏）----
+       大字 + 副标题 + 一个实心按钮，是最经典的"首屏三件套"。 */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      min-height: 320px;
+      margin-top: 24px;
+      padding: 48px 24px;
+      text-align: center;
+      background: linear-gradient(160deg, #eff6ff 0%, #ffffff 60%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 40px;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .btn {
+      margin-top: 8px;
+      padding: 12px 28px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--white);
+      background-color: var(--primary);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    /* ---- 第 4 组：卡片 ----
+       白底 + 1px 浅灰边 + 圆角 + 一点点悬停反馈，
+       比"浅蓝底 + 光秃秃的方块"精致得多，而且几乎没多写代码。 */
+    .card-wall {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .card p {
+      flex: 1;
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .card-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .tag {
+      padding: 4px 12px;
+      font-size: 12px;
+      color: #1d4ed8;
+      background-color: var(--primary-soft);
+      border-radius: 999px;
+    }
+
+    .card-foot a {
+      font-size: 14px;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .card-foot a:hover {
+      text-decoration: underline;
+    }
+
+    /* ---- 第 5 组：两栏布局 ----
+       左边浅蓝（说明它是"辅助信息"），右边白色（说明它是"内容主体"）——
+       颜色本身就在告诉用户谁轻谁重。 */
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .sidebar {
+      padding: 22px;
+      background-color: var(--primary-soft);
+      border: 1px solid #dbeafe;
+      border-radius: 14px;
+    }
+
+    .main {
+      padding: 22px;
+      background-color: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .sidebar h3,
+    .main h3 {
+      margin-top: 0;
+      font-size: 17px;
+    }
+
+    .sidebar ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .sidebar li {
+      margin-bottom: 6px;
+    }
+
+    .main p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ---- 窄屏：不只是"变一栏"，字号和留白也要跟着收 ---- */
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .card-wall {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: 240px;
+        padding: 32px 20px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .menu {
+        gap: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="logo">龙丹丹</div>
+    <nav class="menu">
+      <a href="#works">作品</a>
+      <a href="#about">关于</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>布局练习页</h1>
+    <p>这个页面是用 Flex + Grid 拼出来的。</p>
+    <button class="btn">看看作品</button>
+  </section>
+
+  <section class="card-wall" id="works">
+    <article class="card">
+      <h3>待办清单</h3>
+      <p>DOM + 事件委托 + localStorage，刷新页面数据不丢。</p>
+      <div class="card-foot">
+        <span class="tag">原生 JS</span>
+        <a href="#">打开</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <h3>接口列表页</h3>
+      <p>fetch 拿 GitHub 数据，带加载中、出错提示和关键字搜索。</p>
+      <div class="card-foot">
+        <span class="tag">异步</span>
+        <a href="#">打开</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <h3>歌单数据台</h3>
+      <p>数组套对象的老配方：筛选、统计、时长换算。</p>
+      <div class="card-foot">
+        <span class="tag">数组</span>
+        <a href="#">打开</a>
+      </div>
+    </article>
+  </section>
+
+  <section class="layout" id="about">
+    <aside class="sidebar">
+      <h3>学习进度</h3>
+      <ul>
+        <li>学习日 1-5：JS 基础 + HTML/CSS 入门</li>
+        <li>模块 1：歌单数据台</li>
+        <li>模块 2：待办清单 v1</li>
+        <li>模块 3：接口列表页</li>
+        <li>模块 4：Flex + Grid（进行中）</li>
+      </ul>
+    </aside>
+    <main class="main">
+      <h3>关于这一页</h3>
+      <p>左边是固定宽的侧栏，右边是主内容区，剩下的空间全归它。</p>
+      <p>把浏览器窗口拖窄到 768px 以下，两栏会变成上下两块——这就是响应式。</p>
+    </main>
+  </section>
+</body>
+</html>

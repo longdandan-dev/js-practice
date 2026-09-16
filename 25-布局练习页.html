@@ -29,26 +29,69 @@
        建议顺序：先让页面别太丑（body 字体、背景、间距），
                  再按六题一题一题往下做。
        ============================================================ */
-
-
     /* ---- 第 1 题：导航栏（.nav / .logo / .menu）----
        要的效果：logo 在最左，两个链接在最右，整条竖直居中
        用到的：display: flex、justify-content: space-between、align-items: center、gap
     */
+.nav{
+  background-color: aliceblue;
+  border:  solid 1px;
+  padding: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
 
+.menu{
+  background-color: aqua;
+  display: flex;
+  gap: 13px;
+}
 
     /* ---- 第 2 题：卡片墙（.card-wall / .card）----
        要的效果：三张卡片并排，窗口一窄就自动减少每行的张数
        用到的：display: grid、grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))、gap
        卡片自己还要有：背景、边框、圆角、内边距
     */
+.card{
+  background-color: rgb(225, 242, 244);
+  border:  solid 1px;
+  border-radius: 8px;
+  padding: 10px;
+  
+  
 
+   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
+.card-wall{
+ display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.card p {
+  flex:1;
+}
     /* ---- 第 3 题：两栏内容区（.layout / .sidebar / .main）----
        要的效果：左边侧栏固定 240px，右边主内容吃掉剩下的空间
        用到的：display: grid、grid-template-columns: 240px 1fr、gap
     */
+.layout{
+  display: grid;
+  grid-template-columns:  240px 1fr;
+  gap: 10px;
 
+  background-color: azure;
+  border:  solid 1px;
+  border-radius: 8px;
+  margin-top: 20px;
+  padding: 10px;
+}
 
     /* ---- 第 4 题：卡片内部（.card-foot / .tag）----
        要的效果：不管描述多长，卡片底部那行都贴在卡片最下面，
@@ -57,7 +100,10 @@
              描述那句给它 flex: 1（把多余空间从它身上挤出来）；
              底部那行再 display: flex + justify-content: space-between
     */
-
+.card-foot{
+  display: flex;
+  justify-content: space-between;
+}
 
     /* ---- 第 5 题：响应式（@media 写在最下面）----
        目标：@media (max-width: 768px) { ... }
@@ -66,14 +112,70 @@
          卡片墙的 minmax 最小值调小一点（一行只放一张）
          .nav 允许换行（flex-wrap: wrap）
     */
-
+@media (max-width:768px){
+  .layout{
+    grid-template-columns: 1fr;
+  }
+}
 
     /* ---- 第 6 题：hero 居中（.hero / .btn）----
        要的效果：标题、说明、按钮在 hero 区域里水平竖直都居中
        用到的：display: flex、justify-content: center、align-items: center、flex-direction: column
        再给 hero 定一个高度（比如 min-height: 260px），居中才看得出来
     */
+.hero{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height :260px;
+}
 
+.btn{
+  background-color: rgb(239, 239, 244);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 18px;
+
+}
+
+.card-wall{
+  background-color: rgb(236, 236, 244);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.tag{
+  /* background-color: rgb(159, 159, 180);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 16px; */
+}
+
+.sidebar{
+ background-color: rgb(241, 241, 245);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.main{
+background-color: rgb(241, 241, 245);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.logo{
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 18px;
+}
   </style>
 </head>
 <body>
