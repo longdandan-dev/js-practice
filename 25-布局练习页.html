@@ -1,0 +1,145 @@
+<!-- ============================================================
+     阶段 0 · 模块 4 产出：布局练习页（25-布局练习页.html）
+     ------------------------------------------------------------
+     这是模块 4 的作品：导航栏 + 首屏 + 卡片墙 + 两栏内容区，还要能在手机上用。
+     HTML 我已经写好（class 都起好了名字），style 里你自己从零写。
+
+     六题（做完一题跑一次检查，别攒到最后）：
+       1. 导航栏：logo 靠左、菜单靠右、竖直方向居中（flex + space-between）
+       2. 卡片墙：至少三张卡片并排；一行放不下就自动换行（grid + auto-fit + minmax）
+       3. 两栏内容区：左边侧栏 240px，右边主内容自适应（grid）
+       4. 卡片内部：标题、描述、底部一行（标签 + 链接）——底部那行要贴在卡片最下面（flex + column）
+       5. 响应式：窗口窄于 768px 时，两栏变一栏、卡片墙变一列、导航允许换行
+       6. 居中：hero 区里的标题、说明、按钮水平竖直都居中（flex 三件套）
+
+     验收两道关：
+       ① 终端跑 node 检查布局.js —— 要全绿
+       ② 浏览器里把窗口从宽拖到窄，看布局会不会跟着变（这是布局的核心手感）
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>布局练习页</title>
+
+  <style>
+    /* ============================================================
+       这里你自己从零开始写。
+       建议顺序：先让页面别太丑（body 字体、背景、间距），
+                 再按六题一题一题往下做。
+       ============================================================ */
+
+
+    /* ---- 第 1 题：导航栏（.nav / .logo / .menu）----
+       要的效果：logo 在最左，两个链接在最右，整条竖直居中
+       用到的：display: flex、justify-content: space-between、align-items: center、gap
+    */
+
+
+    /* ---- 第 2 题：卡片墙（.card-wall / .card）----
+       要的效果：三张卡片并排，窗口一窄就自动减少每行的张数
+       用到的：display: grid、grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))、gap
+       卡片自己还要有：背景、边框、圆角、内边距
+    */
+
+
+    /* ---- 第 3 题：两栏内容区（.layout / .sidebar / .main）----
+       要的效果：左边侧栏固定 240px，右边主内容吃掉剩下的空间
+       用到的：display: grid、grid-template-columns: 240px 1fr、gap
+    */
+
+
+    /* ---- 第 4 题：卡片内部（.card-foot / .tag）----
+       要的效果：不管描述多长，卡片底部那行都贴在卡片最下面，
+                 同一行里"标签"在左、"打开"在右
+       思路：卡片自己 display: flex; flex-direction: column;
+             描述那句给它 flex: 1（把多余空间从它身上挤出来）；
+             底部那行再 display: flex + justify-content: space-between
+    */
+
+
+    /* ---- 第 5 题：响应式（@media 写在最下面）----
+       目标：@media (max-width: 768px) { ... }
+       里面至少做三件事：
+         .layout 的 grid-template-columns 改成 1fr（两栏变一栏）
+         卡片墙的 minmax 最小值调小一点（一行只放一张）
+         .nav 允许换行（flex-wrap: wrap）
+    */
+
+
+    /* ---- 第 6 题：hero 居中（.hero / .btn）----
+       要的效果：标题、说明、按钮在 hero 区域里水平竖直都居中
+       用到的：display: flex、justify-content: center、align-items: center、flex-direction: column
+       再给 hero 定一个高度（比如 min-height: 260px），居中才看得出来
+    */
+
+  </style>
+</head>
+<body>
+  <!-- 第 1 题：导航栏 -->
+  <header class="nav">
+    <div class="logo">龙丹丹</div>
+    <nav class="menu">
+      <a href="#works">作品</a>
+      <a href="#about">关于</a>
+    </nav>
+  </header>
+
+  <!-- 第 6 题：hero -->
+  <section class="hero">
+    <h1>布局练习页</h1>
+    <p>这个页面是用 Flex + Grid 拼出来的。</p>
+    <button class="btn">看看作品</button>
+  </section>
+
+  <!-- 第 2 / 4 题：卡片墙，至少三张卡片 -->
+  <section class="card-wall" id="works">
+    <article class="card">
+      <h3>待办清单</h3>
+      <p>DOM + 事件委托 + localStorage，刷新页面数据不丢。</p>
+      <div class="card-foot">
+        <span class="tag">原生 JS</span>
+        <a href="#">打开</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <h3>接口列表页</h3>
+      <p>fetch 拿 GitHub 数据，带加载中、出错提示和关键字搜索。</p>
+      <div class="card-foot">
+        <span class="tag">异步</span>
+        <a href="#">打开</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <h3>歌单数据台</h3>
+      <p>数组套对象的老配方：筛选、统计、时长换算。</p>
+      <div class="card-foot">
+        <span class="tag">数组</span>
+        <a href="#">打开</a>
+      </div>
+    </article>
+  </section>
+
+  <!-- 第 3 题：两栏内容区 -->
+  <section class="layout" id="about">
+    <aside class="sidebar">
+      <h3>学习进度</h3>
+      <ul>
+        <li>学习日 1-5：JS 基础 + HTML/CSS 入门</li>
+        <li>模块 1：歌单数据台</li>
+        <li>模块 2：待办清单 v1</li>
+        <li>模块 3：接口列表页</li>
+        <li>模块 4：Flex + Grid（进行中）</li>
+      </ul>
+    </aside>
+    <main class="main">
+      <h3>关于这一页</h3>
+      <p>左边是固定宽的侧栏，右边是主内容区，剩下的空间全归它。</p>
+      <p>把浏览器窗口拖窄到 768px 以下，两栏会变成上下两块——这就是响应式。</p>
+    </main>
+  </section>
+</body>
+</html>

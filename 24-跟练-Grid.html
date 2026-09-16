@@ -1,0 +1,194 @@
+<!-- ============================================================
+     阶段 0 · 模块 4 跟练本 B（Grid 布局）
+     ------------------------------------------------------------
+     老规矩：一段一段自己敲进下面的 style 里，敲完保存、看浏览器。
+
+     跟练清单：
+       1. display: grid + grid-template-columns —— 把一块地切成几列
+       2. gap —— 行和列之间的缝（grid 里 gap 特别顺手）
+       3. repeat() 简写 —— 三列不用写三遍 1fr
+       4. auto-fit + minmax() —— 卡片墙自动换行（这一节最值钱）
+       5. grid-column: span 2 —— 让某个格子横着占两格
+       6. 两栏布局：grid-template-columns: 240px 1fr
+       7. @media 媒体查询 —— 窄屏时两栏变一栏
+
+     一句话记住区别：
+       Flex 管"一条线"上的排列（一排按钮、一个导航栏）；
+       Grid 管"一张表"的行和列（卡片墙、两栏布局）。
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Grid 跟练</title>
+
+  <style>
+    /* 页面基础样式，先给好了，今天不用动 */
+    body {
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1, h2 {
+      color: #1a73e8;
+    }
+
+    .cell {
+      background-color: #dbeafe;
+      border: 1px solid #93c5fd;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .card-mini {
+      background-color: #ffffff;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .sidebar {
+      background-color: #eef2ff;
+      border: 1px solid #c7d2fe;
+      padding: 16px;
+    }
+
+    .main {
+      background-color: #ffffff;
+      border: 1px solid #dddddd;
+      padding: 16px;
+    }
+
+
+    /* ---- 跟练 1：把六个格子切成三列 ----
+       目标：给 .grid-demo 加
+         display: grid;
+         grid-template-columns: 1fr 1fr 1fr;
+       fr 是"份"的意思：1fr 1fr 1fr = 三等份
+       观察：六个格子变成两行三列
+    */
+    .grid-demo {
+      border: 1px dashed #bbbbbb;
+      padding: 12px;
+    }
+
+
+    /* ---- 跟练 2：gap（加给 .grid-demo）----
+       目标：gap: 12px;
+       妙处：grid 里 gap 是行缝和列缝一起给的，不用分两次写
+       想分开写也可以：row-gap: 12px; column-gap: 20px;
+    */
+
+
+    /* ---- 跟练 3：repeat() 简写（改 .grid-demo 那一行）----
+       目标：grid-template-columns: repeat(3, 1fr);
+       和 1fr 1fr 1fr 完全等价，只是列多了以后更省事
+    */
+
+
+    /* ---- 跟练 4：卡片墙（这一节最值钱，加给 .card-wall）----
+       目标：
+         display: grid;
+         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+         gap: 16px;
+       逐个词解释：
+         repeat(..., ...)  → 重复生成很多列，具体几列让浏览器自己定
+         auto-fit          → 放得下几列就放几列
+         minmax(180px, 1fr)→ 每列最窄 180px，最宽平摊 1 份
+       效果：窗口宽 → 一行五张卡片；窗口窄 → 自动变成四张、三张、两张、一张
+       这是"响应式卡片墙"的标准配方，记下来能用一辈子
+    */
+    .card-wall {
+      margin-top: 20px;
+    }
+
+
+    /* ---- 跟练 5：跨列（加给第一张卡片 .card-wide）----
+       目标：.card-wide { grid-column: span 2; }
+       效果：它横着占两个格子，剩下的卡片自动往后让位
+       换成 span 3 或者 1 / 3 也可以自己试试
+    */
+
+
+    /* ---- 跟练 6：两栏布局（加给 .layout）----
+       目标：
+         display: grid;
+         grid-template-columns: 240px 1fr;
+         gap: 16px;
+       效果：左边侧栏固定 240px，右边主内容把剩下的空间全吃掉
+       这块 HTML 里侧栏写在前面、主内容写在后面，顺序要对上
+    */
+    .layout {
+      margin-top: 20px;
+    }
+
+
+    /* ---- 跟练 7：媒体查询（写在文件最下面）----
+       目标：
+         @media (max-width: 768px) {
+           .layout {
+             grid-template-columns: 1fr;
+           }
+         }
+       意思：窗口宽度 ≤ 768px 时，把两栏改成一行一列（也就是上下堆）
+       玩法：写完把浏览器窗口拖窄，跨过 768px 那一刻布局会跳变
+    */
+
+  </style>
+</head>
+<body>
+  <h1>Grid 跟练</h1>
+
+  <!-- 跟练 1-3：六个格子 -->
+  <h2>跟练 1-3：三列</h2>
+  <div class="grid-demo">
+    <div class="cell">1</div>
+    <div class="cell">2</div>
+    <div class="cell">3</div>
+    <div class="cell">4</div>
+    <div class="cell">5</div>
+    <div class="cell">6</div>
+  </div>
+
+  <!-- 跟练 4-5：卡片墙 -->
+  <h2>跟练 4-5：卡片墙</h2>
+  <div class="card-wall">
+    <div class="card-mini card-wide">
+      <h3>简介</h3>
+      <p>我横着占了两格。</p>
+    </div>
+    <div class="card-mini">
+      <h3>技能</h3>
+      <p>HTML / CSS / JS</p>
+    </div>
+    <div class="card-mini">
+      <h3>作品</h3>
+      <p>待办清单、接口列表页</p>
+    </div>
+    <div class="card-mini">
+      <h3>联系</h3>
+      <p>GitHub：longdandan-dev</p>
+    </div>
+    <div class="card-mini">
+      <h3>在学</h3>
+      <p>Flex + Grid</p>
+    </div>
+  </div>
+
+  <!-- 跟练 6-7：两栏布局 -->
+  <h2>跟练 6-7：两栏</h2>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>侧栏</h3>
+      <p>固定 240px 宽。</p>
+    </aside>
+    <main class="main">
+      <h3>主内容区</h3>
+      <p>我把剩下的空间全吃掉。窗口拖窄一点，我们就会变成上下两块。</p>
+    </main>
+  </div>
+</body>
+</html>

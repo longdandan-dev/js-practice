@@ -1,0 +1,166 @@
+<!-- ============================================================
+     阶段 0 · 模块 4 跟练本 A（Flex 布局）
+     ------------------------------------------------------------
+     老规矩：跟着聊天里给的代码，一段一段自己敲进下面的 style 里。
+     每敲完一段：Ctrl + S 保存 → 右键这个文件 → Open with Live Server，
+     在浏览器里看盒子怎么动。
+
+     跟练清单：
+       1. display: flex —— 把竖着堆的盒子变成横着排（写在父容器上）
+       2. justify-content —— 主轴（横）怎么排：flex-start / center / space-between
+       3. align-items —— 交叉轴（竖）怎么对齐：stretch / center
+       4. gap —— 盒子之间的缝（比 margin 好用）
+       5. flex-direction + flex-wrap —— 换方向、换行
+       6. flex: 1 —— 谁分掉剩下的空间
+       7. 综合：导航栏（logo 靠左、菜单靠右）+ 居中三件套
+
+     body 里的 HTML 今天不用改，只写 CSS。
+     一句话记住：display: flex 写在"父容器"身上，写在子元素身上没用。
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Flex 跟练</title>
+
+  <style>
+    /* 页面基础样式，先给好了，今天不用动 */
+    body {
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1, h2 {
+      color: #1a73e8;
+    }
+
+    /* 试验田：三个盒子。等会儿把 display: flex 加到 .row-demo 上，
+       它们就会从"竖着堆"变成"横着排" */
+    .row-demo {
+      background-color: #ffffff;
+      border: 1px dashed #bbbbbb;
+      padding: 12px;
+    }
+
+    .box {
+      background-color: #dbeafe;
+      border: 1px solid #93c5fd;
+      padding: 16px;
+    }
+
+
+    /* ---- 跟练 1：display: flex ----
+       目标：给 .row-demo 加 display: flex;
+       观察：三个盒子从上下堆叠变成左右并排
+    */
+
+
+    /* ---- 跟练 2：justify-content（主轴对齐，还是加给 .row-demo）----
+       依次试这三个值，每改一次都保存看一眼：
+         justify-content: flex-start;    → 整体靠左
+         justify-content: center;        → 整体居中
+         justify-content: space-between; → 两头贴边，中间均分
+    */
+
+
+    /* ---- 跟练 3：align-items（交叉轴对齐，加给 .row-demo）----
+       先给 .box 加一句 height: 60px; 再看下面两个值的区别：
+         align-items: stretch; → 元素被拉满整行高（默认值）
+         align-items: center;  → 竖直方向居中
+    */
+
+
+    /* ---- 跟练 4：gap（盒子之间的缝，加给 .row-demo）----
+       目标：gap: 16px;
+       对照一下：以前要一个个 margin 推开，现在一行就够
+    */
+
+
+    /* ---- 跟练 5：flex-direction + flex-wrap（加给 .row-demo）----
+       试这两个：
+         flex-direction: column; → 主轴改成竖的，三个盒子就竖排了
+         flex-wrap: wrap;        → 一行放不下就换行（盒子多的时候才看得出来）
+       试完请改回横向、不换行，不然后面几段会看晕
+    */
+
+
+    /* ---- 跟练 6：flex: 1（加给其中一个盒子）----
+       目标：给 .box 加 flex: 1;
+       观察：三个盒子平摊了宽度
+       再试试：给第 2 个盒子单独一个类（比如 .grow），只让它 flex: 1;
+               → 它会把剩下的空间全吃掉，这就是"菜单自动靠右"的原理
+    */
+
+
+    /* ---- 跟练 7-A：导航栏 ----
+       目标：.nav 用 flex + space-between + center，
+             logo 靠左、菜单靠右，竖直方向都居中
+       提示：.menu 里那三个 span 也要排成一行——给 .menu 也上 display: flex + gap
+    */
+    .nav {
+      background-color: #ffffff;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+
+    .logo {
+      font-weight: bold;
+      color: #1a73e8;
+    }
+
+
+    /* ---- 跟练 7-B：居中三件套（加给 .center-demo）----
+       目标：把里面那个小方块放到整块区域的正中间，三句话：
+         display: flex;
+         justify-content: center;
+         align-items: center;
+       这是背下来不亏的一招，面试也常问"怎么居中"
+    */
+    .center-demo {
+      background-color: #ffffff;
+      border: 1px dashed #bbbbbb;
+      height: 160px;
+    }
+
+    .center-box {
+      background-color: #1a73e8;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 6px;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Flex 跟练</h1>
+
+  <!-- 跟练 1-6 的试验田：默认情况下这三个盒子会竖着堆 -->
+  <h2>跟练 1-6：三个盒子</h2>
+  <div class="row-demo">
+    <div class="box">盒子 1</div>
+    <div class="box">盒子 2</div>
+    <div class="box">盒子 3</div>
+  </div>
+
+  <!-- 跟练 7-A：导航栏 -->
+  <h2>跟练 7-A：导航栏</h2>
+  <div class="nav">
+    <div class="logo">龙丹丹</div>
+    <div class="menu">
+      <span>首页</span>
+      <span>作品</span>
+      <span>关于</span>
+    </div>
+  </div>
+
+  <!-- 跟练 7-B：居中 -->
+  <h2>跟练 7-B：居中</h2>
+  <div class="center-demo">
+    <div class="center-box">我应该在正中间</div>
+  </div>
+</body>
+</html>
