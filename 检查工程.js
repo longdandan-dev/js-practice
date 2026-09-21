@@ -1,8 +1,8 @@
 /* ============================================================
    工程化体检脚本（阶段 0 · 模块 5：npm + Vite）
    ------------------------------------------------------------
-   用法（在练习目录 D:\A-前端学习\js-practice 里运行）：
-     node 检查工程.js                    → 默认检查 D:\A-前端学习\my-portfolio
+   用法（在练习目录 D:\A-前端学习\projects\js-practice 里运行）：
+     node 检查工程.js                    → 默认检查 D:\A-前端学习\projects\my-portfolio
      node 检查工程.js D:\别的\项目目录    → 检查指定的项目目录
 
    它查什么：项目骨架齐不齐、package.json 写对没有、依赖装没装、
@@ -14,7 +14,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const DEFAULT_DIR = "D:\\A-前端学习\\my-portfolio";
+const DEFAULT_DIR = "D:\\A-前端学习\\projects\\my-portfolio";
 const dir = path.resolve(process.argv[2] || DEFAULT_DIR);
 
 const results = [];
@@ -38,7 +38,7 @@ console.log("检查目录：" + dir + "\n");
 if (!fs.existsSync(dir)) {
   console.log("[未通过] 项目目录还不存在：");
   console.log("         " + dir);
-  console.log("\n先按跟练手册第 1 步，在 D:\\A-前端学习 下把项目建出来，再回来跑这个脚本。");
+  console.log("\n先按跟练手册第 1 步，在 D:\\A-前端学习\\projects 下把项目建出来，再回来跑这个脚本。");
   process.exit(0);
 }
 
